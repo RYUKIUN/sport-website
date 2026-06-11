@@ -6,7 +6,7 @@
 <title>Sports Check-in</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -442,13 +442,34 @@ h3{font-size:.95rem;font-weight:600}
           ดาวน์โหลดทั้งหมด (.zip)
         </button>
       </div>
+
       <div id="qr-missing-warn" class="alert alert-warn hidden mb-16">
         <div class="flex items-center justify-between gap-12">
           <span>⚠ บางวันยังไม่มี QR Code</span>
           <button class="btn btn-warning" onclick="generateMissingCodes()" style="font-size:12px;padding:.35rem .8rem;flex-shrink:0">สร้าง Code</button>
         </div>
       </div>
-      <div id="qr-list" style="display:flex;flex-direction:column;gap:8px"></div>
+
+      <!-- Date picker -->
+      <div class="glass-card mb-16">
+        <label>เลือกวันฝึกซ้อม</label>
+        <select id="qr-date-select" onchange="renderSelectedQR()">
+          <option value="">— เลือกวัน —</option>
+        </select>
+      </div>
+
+      <!-- Live QR display -->
+      <div id="qr-display" class="hidden glass-card" style="text-align:center">
+        <div id="qr-svg-wrap" style="display:inline-block;padding:16px;background:#fff;border-radius:12px;margin-bottom:12px"></div>
+        <div id="qr-display-date" style="font-weight:700;font-size:16px;margin-bottom:4px"></div>
+        <div id="qr-display-code" style="font-size:12px;color:var(--text-ter);margin-bottom:16px;letter-spacing:.1em"></div>
+        <button class="btn btn-primary w-full" id="qr-dl-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          ดาวน์โหลด QR นี้
+        </button>
+      </div>
+
+      <div id="qr-no-code" class="hidden alert alert-warn" style="text-align:center">วันนี้ยังไม่มี QR Code</div>
     </div>
 
     <div id="qr-empty" class="text-center text-sec text-sm hidden" style="padding:2rem">เลือกกีฬาเพื่อดู QR Code</div>
@@ -541,7 +562,8 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbx-H_X2_rqDYH3OJ91vkVCJ
 // ══════════════════════════════
 // STATE
 // ══════════════════════════════
-let sportsData = null;         // from getSportsAndDates
+let sportsData = null;         // [{name, sheet}] from getSportsAndDates
+let trainingDates = [];        // [{date, colIndex}] shared across all sports
 let allAthletes = [];          // flat list for athlete search
 let selectedAthlete = null;    // {rowIndex, firstName, lastName, nickname, sheet, dateColIndex}
 let currentStream = null;      // camera stream
@@ -599,6 +621,7 @@ async function loadSportsData(opts = {}) {
     const data = await api({ action: 'getSportsAndDates' }, { retries: 3, onRetry: opts.onRetry });
     if (data.success) {
       sportsData = data.sports;
+      trainingDates = data.training_dates || [];
       return sportsData;
     }
   } catch(e) { console.error('loadSportsData:', e); }
@@ -661,8 +684,8 @@ async function onSportSelected() {
 
   const sport = sportsData[parseInt(sportIdx)];
   const today = getTodayBE();
-  const todayDate = sport.training_dates.find(d => d.date === today)
-    || sport.training_dates[sport.training_dates.length - 1];
+  const todayDate = trainingDates.find(d => d.date === today)
+    || trainingDates[trainingDates.length - 1];
 
   // Show search step with loading state
   document.getElementById('athlete-step-sport').classList.add('hidden');
@@ -781,102 +804,65 @@ function cancelScan() {
   document.getElementById('athlete-step-search').classList.remove('hidden');
 }
 
+// ─── Manual input HTML — injected in EVERY path so it's always visible ───
+function manualInputHTML() {
+  return `<div id="manual-code-wrap" class="mt-12">
+    <p style="font-size:11px;color:var(--text-ter);text-align:center;margin-bottom:8px">หรือพิมพ์ Code ด้วยตนเอง</p>
+    <div class="flex gap-8">
+      <input type="text" id="manual-code-input" placeholder="ใส่ Code 6 ตัว"
+        style="text-transform:uppercase" maxlength="6"
+        onkeydown="if(event.key==='Enter')handleQRCode(this.value.trim().toUpperCase())">
+      <button class="btn btn-primary" style="flex-shrink:0"
+        onclick="handleQRCode(document.getElementById('manual-code-input').value.trim().toUpperCase())">ยืนยัน</button>
+    </div>
+  </div>`;
+}
+
 async function startCamera() {
-  const video = document.getElementById('qr-video');
   const scanStatus = document.getElementById('scan-status');
 
-  // Manual code input — always visible
-  const manualHTML = `
-    <div class="mt-12" id="manual-code-wrap">
-      <p class="text-sec text-sm text-center mb-8" style="font-size:11px;color:var(--text-ter)">หรือพิมพ์ Code ด้วยตนเอง</p>
-      <div class="flex gap-8">
-        <input type="text" id="manual-code-input" placeholder="ใส่ Code 6 ตัว" style="text-transform:uppercase" maxlength="6"
-          onkeydown="if(event.key==='Enter')handleQRCode(this.value.trim().toUpperCase())">
-        <button class="btn btn-primary" onclick="handleQRCode(document.getElementById('manual-code-input').value.trim().toUpperCase())" style="flex-shrink:0">ยืนยัน</button>
-      </div>
-    </div>`;
-
+  // No camera support at all — just show manual input
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    // No camera API — just show manual input
-    scanStatus.innerHTML = manualHTML;
+    scanStatus.innerHTML = manualInputHTML();
     return;
   }
 
-  // Check if we can query permission state first (not available on all browsers)
-  let permState = 'prompt';
-  try {
-    const ps = await navigator.permissions.query({ name: 'camera' });
-    permState = ps.state; // 'granted' | 'denied' | 'prompt'
-  } catch(e) { /* permissions API not supported, assume prompt */ }
-
-  if (permState === 'denied') {
-    scanStatus.innerHTML = `
-      <div class="alert alert-warn mb-8" style="font-size:12px">กล้องถูกปฏิเสธ — กรุณาอนุญาตกล้องใน Settings แล้วโหลดหน้าใหม่</div>
-      ${manualHTML}`;
-    return;
-  }
-
-  if (permState === 'prompt') {
-    // On mobile, show an explicit tap-to-activate button so the OS permission dialog appears
-    // from a clear user gesture (required by iOS Safari / some Android browsers)
-    scanStatus.innerHTML = `
-      <div id="cam-permission-prompt" style="text-align:center;padding:.75rem 0">
-        <button class="btn btn-primary btn-lg w-full" id="open-cam-btn" onclick="activateCamera()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
-          </svg>
-          เปิดกล้องสแกน QR
-        </button>
-        <p class="text-ter text-xs mt-8">ระบบจะขออนุญาตใช้กล้อง</p>
-      </div>
-      ${manualHTML}`;
-    return;
-  }
-
-  // Permission already granted — open directly
-  await activateCamera();
+  // Always show a tap-to-open-camera button + manual input below
+  // This satisfies iOS/Android user-gesture requirement for camera permission
+  scanStatus.innerHTML = `
+    <button class="btn btn-primary w-full" onclick="activateCamera()" id="open-cam-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      เปิดกล้องสแกน QR
+    </button>
+    ${manualInputHTML()}`;
 }
 
 async function activateCamera() {
-  const video = document.getElementById('qr-video');
+  const video      = document.getElementById('qr-video');
   const scanStatus = document.getElementById('scan-status');
-
-  // Remove permission prompt if present
-  const prompt = document.getElementById('cam-permission-prompt');
-  if (prompt) prompt.remove();
-
-  // Show a small "opening camera…" note
-  let openingNote = document.getElementById('cam-opening-note');
-  if (!openingNote) {
-    openingNote = document.createElement('div');
-    openingNote.id = 'cam-opening-note';
-    openingNote.className = 'alert alert-info mb-8';
-    openingNote.style.fontSize = '12px';
-    openingNote.innerHTML = '<div class="flex items-center gap-8"><div class="spinner"></div> กำลังเปิดกล้อง...</div>';
-    scanStatus.insertBefore(openingNote, scanStatus.firstChild);
-  }
+  const btn        = document.getElementById('open-cam-btn');
+  if (btn) btn.remove();
 
   try {
     currentStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode: { ideal: 'environment' } },
       audio: false
     });
-    openingNote.remove();
     video.srcObject = currentStream;
     await video.play();
     startQRScan(video);
   } catch(e) {
-    openingNote.remove();
-    const note = document.createElement('div');
-    note.className = 'alert alert-warn mb-8';
-    note.style.fontSize = '12px';
-    if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-      note.textContent = 'ไม่ได้รับอนุญาตเปิดกล้อง — พิมพ์ Code ด้วยตนเองได้เลย';
-    } else {
-      note.textContent = 'ไม่สามารถเปิดกล้องได้ — ใช้การพิมพ์ Code แทนได้เลย';
-    }
-    scanStatus.insertBefore(note, scanStatus.firstChild);
+    const warn = document.createElement('div');
+    warn.className = 'alert alert-warn mb-8';
+    warn.style.fontSize = '12px';
+    warn.textContent = e.name === 'NotAllowedError'
+      ? 'ไม่ได้รับอนุญาตเปิดกล้อง — ใช้การพิมพ์ Code ด้านล่างได้เลย'
+      : 'ไม่สามารถเปิดกล้องได้ — ใช้การพิมพ์ Code ด้านล่างได้เลย';
+    scanStatus.insertBefore(warn, scanStatus.firstChild);
   }
 }
 
@@ -884,88 +870,62 @@ function stopCamera() {
   if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
 }
 
+// ─── QR Scanner — uses native BarcodeDetector if available, canvas poll fallback ───
 function startQRScan(video) {
-  if (typeof ZXing === 'undefined') return;
-
-  const hints = new Map();
-  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.QR_CODE]);
-  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-  const reader = new ZXing.BrowserQRCodeReader(hints);
-
-  const canvas  = document.createElement('canvas');
-  const ctx     = canvas.getContext('2d', { willReadFrequently: true });
-  const canvas2 = document.createElement('canvas');
-  const ctx2    = canvas2.getContext('2d', { willReadFrequently: true });
-
   let rafId = null;
-  let frameCount = 0;
+  let active = true;
 
+  // Wrap stopCamera to also kill the poll loop
   const origStop = stopCamera;
-  stopCamera = function() {
-    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    origStop();
-    stopCamera = origStop;
-  };
+  stopCamera = function() { active = false; if (rafId) cancelAnimationFrame(rafId); origStop(); stopCamera = origStop; };
 
-  // Try to decode from a canvas using both binarizers
-  function tryDecode(c) {
-    const lum = new ZXing.HTMLCanvasElementLuminanceSource(c);
-    // Attempt 1: HybridBinarizer (best for sharp images)
-    try {
-      const r = reader.decodeBitmap(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum)));
-      if (r) return r.getText();
-    } catch(e) {}
-    // Attempt 2: GlobalHistogramBinarizer (better for low-contrast / dark images)
-    try {
-      const r = reader.decodeBitmap(new ZXing.BinaryBitmap(new ZXing.GlobalHistogramBinarizer(lum)));
-      if (r) return r.getText();
-    } catch(e) {}
-    return null;
+  // ── Path A: native BarcodeDetector (Chrome Android, iOS 16+, desktop Chrome/Edge) ──
+  if (typeof BarcodeDetector !== 'undefined') {
+    const detector = new BarcodeDetector({ formats: ['qr_code'] });
+    const poll = async () => {
+      if (!active) return;
+      if (video.readyState >= 2 && !video.paused) {
+        try {
+          const results = await detector.detect(video);
+          if (results.length > 0) { handleQRCode(results[0].rawValue); return; }
+        } catch(e) {}
+      }
+      rafId = requestAnimationFrame(poll);
+    };
+    rafId = requestAnimationFrame(poll);
+    return;
   }
 
-  const poll = () => {
-    if (!currentStream) return;
-    if (video.readyState >= 2 && video.videoWidth > 0 && !video.paused) {
-      const vw = video.videoWidth;
-      const vh = video.videoHeight;
-      frameCount++;
+  // ── Path B: canvas snapshot every 250 ms + jsQR (lightweight, no ZXing) ──
+  // Load jsQR on demand if not already loaded
+  function runCanvasScan() {
+    const canvas = document.createElement('canvas');
+    const ctx    = canvas.getContext('2d', { willReadFrequently: true });
+    let   last   = 0;
 
-      // --- Pass A: full frame ---
-      canvas.width  = vw;
-      canvas.height = vh;
-      ctx.drawImage(video, 0, 0);
-      let found = tryDecode(canvas);
-      if (found) { handleQRCode(found); return; }
-
-      // --- Pass B: center crop (60% of frame) — helps when QR is centred and video is large ---
-      const cw = Math.round(vw * 0.6);
-      const ch = Math.round(vh * 0.6);
-      const cx = Math.round((vw - cw) / 2);
-      const cy = Math.round((vh - ch) / 2);
-      canvas2.width  = cw;
-      canvas2.height = ch;
-      ctx2.drawImage(video, cx, cy, cw, ch, 0, 0, cw, ch);
-      found = tryDecode(canvas2);
-      if (found) { handleQRCode(found); return; }
-
-      // --- Pass C: every 3rd frame, try a 2× upscaled center crop ---
-      // Upscaling helps ZXing binarizer when the QR is small on screen
-      if (frameCount % 3 === 0) {
-        const scale = 2;
-        canvas2.width  = cw * scale;
-        canvas2.height = ch * scale;
-        ctx2.drawImage(video, cx, cy, cw, ch, 0, 0, cw * scale, ch * scale);
-        found = tryDecode(canvas2);
-        if (found) { handleQRCode(found); return; }
+    const poll = (ts) => {
+      if (!active) return;
+      if (ts - last > 250 && video.readyState >= 2 && video.videoWidth > 0 && !video.paused) {
+        last = ts;
+        canvas.width  = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const result = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+        if (result) { handleQRCode(result.data); return; }
       }
-    }
+      rafId = requestAnimationFrame(poll);
+    };
     rafId = requestAnimationFrame(poll);
-  };
+  }
 
-  if (video.readyState >= 2) {
-    rafId = requestAnimationFrame(poll);
+  if (typeof jsQR !== 'undefined') {
+    runCanvasScan();
   } else {
-    video.addEventListener('canplay', () => { rafId = requestAnimationFrame(poll); }, { once: true });
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+    s.onload = runCanvasScan;
+    document.head.appendChild(s);
   }
 }
 
@@ -1105,6 +1065,7 @@ async function staffLogin() {
 function staffLogout() {
   staffRole = null;
   sportsData = null;
+  trainingDates = [];
   // Hide SA tab — it must only appear after a fresh superadmin login
   const saBtn = document.getElementById('tab-sa-btn');
   if (saBtn) saBtn.style.display = 'none';
@@ -1169,9 +1130,7 @@ function mgmtSportChanged() {
   document.getElementById('mgmt-empty').classList.remove('hidden');
 
   if (!sheet || !sportsData) { dateSel.disabled = true; return; }
-  const sport = sportsData.find(s => s.sheet === sheet);
-  if (!sport) { dateSel.disabled = true; return; }
-  sport.training_dates.forEach(td => {
+  trainingDates.forEach(td => {
     dateSel.appendChild(new Option(td.date, td.date + '|' + td.colIndex));
   });
   dateSel.disabled = false;
@@ -1287,22 +1246,14 @@ function renderQRList(res) {
   const hasMissing = res.codes.some(c => !c.random_code);
   document.getElementById('qr-missing-warn').classList.toggle('hidden', !hasMissing);
 
-  const list = document.getElementById('qr-list');
-  list.innerHTML = res.codes.map((c, i) => {
-    const hasCode = !!c.random_code;
-    return `<div class="qr-date-card">
-      <div>
-        <div style="font-weight:600;font-size:14px">${c.date}</div>
-        <div class="text-sec text-xs mt-4">${hasCode ? c.random_code : '— ยังไม่มี Code —'}</div>
-      </div>
-      <div class="flex gap-8">
-        ${hasCode ? `<button class="btn btn-primary" onclick="downloadSingleQR('${c.date}','${c.random_code}')" style="padding:.4rem .8rem;font-size:12px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>` : ''}
-        <div id="qr-preview-${i}" style="display:none"></div>
-      </div>
-    </div>`;
-  }).join('');
+  // Populate date select
+  const sel = document.getElementById('qr-date-select');
+  sel.innerHTML = '<option value="">— เลือกวัน —</option>' +
+    res.codes.map(c => `<option value="${c.date}" data-code="${c.random_code || ''}">${c.date}${c.random_code ? '' : ' (ไม่มี Code)'}</option>`).join('');
+
+  // Reset display
+  document.getElementById('qr-display').classList.add('hidden');
+  document.getElementById('qr-no-code').classList.add('hidden');
 
   document.getElementById('qr-content').classList.remove('hidden');
 }
@@ -1310,44 +1261,60 @@ function renderQRList(res) {
 function makeQRCanvas(code) {
   return new Promise((resolve) => {
     const div = document.createElement('div');
-    // Level H = 30% error correction — maximum robustness; 512×512 for crisp printing
-    const qr = new QRCode(div, {
-      text: code,
-      width: 512,
-      height: 512,
-      correctLevel: QRCode.CorrectLevel.H
-    });
+    const qr = new QRCode(div, {text: code, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.M});
     setTimeout(() => {
-      const el = div.querySelector('canvas') || div.querySelector('img');
-      resolve(el);
-    }, 300);
+      const img = div.querySelector('img') || div.querySelector('canvas');
+      resolve(img);
+    }, 200);
   });
+}
+
+function renderSelectedQR() {
+  const sel     = document.getElementById('qr-date-select');
+  const opt     = sel.options[sel.selectedIndex];
+  const date    = sel.value;
+  const code    = opt ? opt.dataset.code : '';
+  const display = document.getElementById('qr-display');
+  const noCode  = document.getElementById('qr-no-code');
+
+  display.classList.add('hidden');
+  noCode.classList.add('hidden');
+  if (!date) return;
+  if (!code) { noCode.classList.remove('hidden'); return; }
+
+  const wrap = document.getElementById('qr-svg-wrap');
+  wrap.innerHTML = '<div style="color:var(--text-ter);font-size:12px;padding:1rem">กำลังสร้าง QR...</div>';
+  makeQRCanvas(code).then(el => {
+    wrap.innerHTML = '';
+    el.style.width  = Math.min(window.innerWidth - 96, 280) + 'px';
+    el.style.height = 'auto';
+    el.style.display = 'block';
+    wrap.appendChild(el);
+  });
+
+  document.getElementById('qr-display-date').textContent = date;
+  document.getElementById('qr-display-code').textContent = code;
+  document.getElementById('qr-dl-btn').onclick = () => downloadSingleQR(date, code);
+  display.classList.remove('hidden');
 }
 
 async function downloadSingleQR(date, code) {
   const el = await makeQRCanvas(code);
   const canvas = document.createElement('canvas');
-  canvas.width = 512; canvas.height = 560;
+  canvas.width = 256; canvas.height = 290;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, 512, 560);
-  if (el.tagName === 'CANVAS') {
-    ctx.drawImage(el, 0, 0, 512, 512);
-  } else {
-    const img = new Image();
-    img.src = el.src;
-    await new Promise(r => { img.onload = r; });
-    ctx.drawImage(img, 0, 0, 512, 512);
-  }
+  ctx.fillRect(0, 0, 256, 290);
+  if (el.tagName === 'CANVAS') ctx.drawImage(el, 0, 0);
+  else { const img = new Image(); img.src = el.src; await new Promise(r=>{img.onload=r}); ctx.drawImage(img,0,0); }
   ctx.fillStyle = '#000';
-  ctx.font = 'bold 28px -apple-system,sans-serif';
+  ctx.font = 'bold 16px -apple-system,sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(date, 256, 546);
-
-  const filename = `${date.replace(/\//g,'-')}.png`;
-  canvas.toBlob(blob => {
-    mobileSafeDownload(blob, filename);
-  }, 'image/png');
+  ctx.fillText(date, 128, 276);
+  const a = document.createElement('a');
+  a.download = `${date.replace(/\//g,'-')}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
 }
 
 async function downloadAllQR() {
@@ -1357,52 +1324,24 @@ async function downloadAllQR() {
   for (const c of codes) {
     const el = await makeQRCanvas(c.random_code);
     const canvas = document.createElement('canvas');
-    canvas.width = 512; canvas.height = 560;
+    canvas.width = 256; canvas.height = 290;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, 512, 560);
-    if (el.tagName === 'CANVAS') {
-      ctx.drawImage(el, 0, 0, 512, 512);
-    } else {
-      const img = new Image();
-      img.src = el.src;
-      await new Promise(r => { img.onload = r; });
-      ctx.drawImage(img, 0, 0, 512, 512);
-    }
+    ctx.fillRect(0, 0, 256, 290);
+    if (el.tagName === 'CANVAS') ctx.drawImage(el, 0, 0);
+    else { const img = new Image(); img.src = el.src; await new Promise(r=>{img.onload=r}); ctx.drawImage(img,0,0); }
     ctx.fillStyle = '#000';
-    ctx.font = 'bold 28px -apple-system,sans-serif';
+    ctx.font = 'bold 16px -apple-system,sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(c.date, 256, 546);
+    ctx.fillText(c.date, 128, 276);
     const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
     zip.file(`${c.date.replace(/\//g,'-')}.png`, blob);
   }
   const content = await zip.generateAsync({type:'blob'});
-  mobileSafeDownload(content, `${currentQRSheet}_QRCodes.zip`);
-}
-
-// Mobile-safe download: appends <a> to body, clicks, removes.
-// On iOS Safari, falls back to opening in a new tab (user can long-press → Save).
-function mobileSafeDownload(blob, filename) {
-  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  try {
-    a.click();
-  } catch(e) {}
-  // iOS Safari ignores a.click() on blobs — open in new tab as fallback
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 3000);
-  // Detect iOS and open in new tab if needed
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  if (isIOS) {
-    // Small delay so the a.click() above has a chance on newer iOS
-    setTimeout(() => { window.open(url, '_blank'); }, 100);
-  }
+  a.download = `${currentQRSheet}_QRCodes.zip`;
+  a.href = URL.createObjectURL(content);
+  a.click();
 }
 
 async function generateMissingCodes() {
