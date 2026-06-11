@@ -442,13 +442,34 @@ h3{font-size:.95rem;font-weight:600}
           ดาวน์โหลดทั้งหมด (.zip)
         </button>
       </div>
+
       <div id="qr-missing-warn" class="alert alert-warn hidden mb-16">
         <div class="flex items-center justify-between gap-12">
           <span>⚠ บางวันยังไม่มี QR Code</span>
           <button class="btn btn-warning" onclick="generateMissingCodes()" style="font-size:12px;padding:.35rem .8rem;flex-shrink:0">สร้าง Code</button>
         </div>
       </div>
-      <div id="qr-list" style="display:flex;flex-direction:column;gap:8px"></div>
+
+      <!-- Date picker -->
+      <div class="glass-card mb-16">
+        <label>เลือกวันฝึกซ้อม</label>
+        <select id="qr-date-select" onchange="renderSelectedQR()">
+          <option value="">— เลือกวัน —</option>
+        </select>
+      </div>
+
+      <!-- Live QR display -->
+      <div id="qr-display" class="hidden glass-card" style="text-align:center">
+        <div id="qr-svg-wrap" style="display:inline-block;padding:16px;background:#fff;border-radius:12px;margin-bottom:12px"></div>
+        <div id="qr-display-date" style="font-weight:700;font-size:16px;margin-bottom:4px"></div>
+        <div id="qr-display-code" style="font-size:12px;color:var(--text-ter);margin-bottom:16px;letter-spacing:.1em"></div>
+        <button class="btn btn-primary w-full" id="qr-dl-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          ดาวน์โหลด QR นี้
+        </button>
+      </div>
+
+      <div id="qr-no-code" class="hidden alert alert-warn" style="text-align:center">วันนี้ยังไม่มี QR Code</div>
     </div>
 
     <div id="qr-empty" class="text-center text-sec text-sm hidden" style="padding:2rem">เลือกกีฬาเพื่อดู QR Code</div>
@@ -1224,24 +1245,60 @@ function renderQRList(res) {
   const hasMissing = res.codes.some(c => !c.random_code);
   document.getElementById('qr-missing-warn').classList.toggle('hidden', !hasMissing);
 
-  const list = document.getElementById('qr-list');
-  list.innerHTML = res.codes.map((c, i) => {
-    const hasCode = !!c.random_code;
-    return `<div class="qr-date-card">
-      <div>
-        <div style="font-weight:600;font-size:14px">${c.date}</div>
-        <div class="text-sec text-xs mt-4">${hasCode ? c.random_code : '— ยังไม่มี Code —'}</div>
-      </div>
-      <div class="flex gap-8">
-        ${hasCode ? `<button class="btn btn-primary" onclick="downloadSingleQR('${c.date}','${c.random_code}')" style="padding:.4rem .8rem;font-size:12px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>` : ''}
-        <div id="qr-preview-${i}" style="display:none"></div>
-      </div>
-    </div>`;
-  }).join('');
+  // Populate date select
+  const sel = document.getElementById('qr-date-select');
+  sel.innerHTML = '<option value="">— เลือกวัน —</option>' +
+    res.codes.map(c => `<option value="${c.date}" data-code="${c.random_code || ''}">${c.date}${c.random_code ? '' : ' (ไม่มี Code)'}</option>`).join('');
+
+  // Reset display
+  document.getElementById('qr-display').classList.add('hidden');
+  document.getElementById('qr-no-code').classList.add('hidden');
 
   document.getElementById('qr-content').classList.remove('hidden');
+}
+
+function renderSelectedQR() {
+  const sel    = document.getElementById('qr-date-select');
+  const opt    = sel.options[sel.selectedIndex];
+  const date   = sel.value;
+  const code   = opt ? opt.dataset.code : '';
+  const display  = document.getElementById('qr-display');
+  const noCode   = document.getElementById('qr-no-code');
+
+  display.classList.add('hidden');
+  noCode.classList.add('hidden');
+  if (!date) return;
+
+  if (!code) {
+    noCode.classList.remove('hidden');
+    return;
+  }
+
+  // Render SVG inline — fills the card width
+  const wrap = document.getElementById('qr-svg-wrap');
+  const container = document.createElement('div');
+  QrCreator.render({
+    text: code,
+    radius: 0,
+    ecLevel: 'H',
+    fill: '#000000',
+    background: '#ffffff',
+    size: Math.min(window.innerWidth - 96, 320)
+  }, container);
+  wrap.innerHTML = '';
+  const svg = container.querySelector('svg');
+  if (svg) {
+    svg.style.display = 'block';
+    wrap.appendChild(svg);
+  }
+
+  document.getElementById('qr-display-date').textContent = date;
+  document.getElementById('qr-display-code').textContent = code;
+
+  const dlBtn = document.getElementById('qr-dl-btn');
+  dlBtn.onclick = () => downloadSingleQR(date, code);
+
+  display.classList.remove('hidden');
 }
 
 // Generate a crisp SVG QR code using qr-creator (vector, infinitely sharp, level H)
