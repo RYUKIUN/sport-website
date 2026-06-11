@@ -562,7 +562,8 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbx-H_X2_rqDYH3OJ91vkVCJ
 // ══════════════════════════════
 // STATE
 // ══════════════════════════════
-let sportsData = null;         // from getSportsAndDates
+let sportsData = null;         // [{name, sheet}] from getSportsAndDates
+let trainingDates = [];        // [{date, colIndex}] shared across all sports
 let allAthletes = [];          // flat list for athlete search
 let selectedAthlete = null;    // {rowIndex, firstName, lastName, nickname, sheet, dateColIndex}
 let currentStream = null;      // camera stream
@@ -620,6 +621,7 @@ async function loadSportsData(opts = {}) {
     const data = await api({ action: 'getSportsAndDates' }, { retries: 3, onRetry: opts.onRetry });
     if (data.success) {
       sportsData = data.sports;
+      trainingDates = data.training_dates || [];
       return sportsData;
     }
   } catch(e) { console.error('loadSportsData:', e); }
@@ -682,8 +684,8 @@ async function onSportSelected() {
 
   const sport = sportsData[parseInt(sportIdx)];
   const today = getTodayBE();
-  const todayDate = sport.training_dates.find(d => d.date === today)
-    || sport.training_dates[sport.training_dates.length - 1];
+  const todayDate = trainingDates.find(d => d.date === today)
+    || trainingDates[trainingDates.length - 1];
 
   // Show search step with loading state
   document.getElementById('athlete-step-sport').classList.add('hidden');
@@ -1063,6 +1065,7 @@ async function staffLogin() {
 function staffLogout() {
   staffRole = null;
   sportsData = null;
+  trainingDates = [];
   // Hide SA tab — it must only appear after a fresh superadmin login
   const saBtn = document.getElementById('tab-sa-btn');
   if (saBtn) saBtn.style.display = 'none';
@@ -1127,9 +1130,7 @@ function mgmtSportChanged() {
   document.getElementById('mgmt-empty').classList.remove('hidden');
 
   if (!sheet || !sportsData) { dateSel.disabled = true; return; }
-  const sport = sportsData.find(s => s.sheet === sheet);
-  if (!sport) { dateSel.disabled = true; return; }
-  sport.training_dates.forEach(td => {
+  trainingDates.forEach(td => {
     dateSel.appendChild(new Option(td.date, td.date + '|' + td.colIndex));
   });
   dateSel.disabled = false;
