@@ -6,7 +6,7 @@
 <title>Sports Check-in</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qr-creator@1.0.0/dist/qr-creator.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -781,102 +781,65 @@ function cancelScan() {
   document.getElementById('athlete-step-search').classList.remove('hidden');
 }
 
+// ─── Manual input HTML — injected in EVERY path so it's always visible ───
+function manualInputHTML() {
+  return `<div id="manual-code-wrap" class="mt-12">
+    <p style="font-size:11px;color:var(--text-ter);text-align:center;margin-bottom:8px">หรือพิมพ์ Code ด้วยตนเอง</p>
+    <div class="flex gap-8">
+      <input type="text" id="manual-code-input" placeholder="ใส่ Code 6 ตัว"
+        style="text-transform:uppercase" maxlength="6"
+        onkeydown="if(event.key==='Enter')handleQRCode(this.value.trim().toUpperCase())">
+      <button class="btn btn-primary" style="flex-shrink:0"
+        onclick="handleQRCode(document.getElementById('manual-code-input').value.trim().toUpperCase())">ยืนยัน</button>
+    </div>
+  </div>`;
+}
+
 async function startCamera() {
-  const video = document.getElementById('qr-video');
   const scanStatus = document.getElementById('scan-status');
 
-  // Manual code input — always visible
-  const manualHTML = `
-    <div class="mt-12" id="manual-code-wrap">
-      <p class="text-sec text-sm text-center mb-8" style="font-size:11px;color:var(--text-ter)">หรือพิมพ์ Code ด้วยตนเอง</p>
-      <div class="flex gap-8">
-        <input type="text" id="manual-code-input" placeholder="ใส่ Code 6 ตัว" style="text-transform:uppercase" maxlength="6"
-          onkeydown="if(event.key==='Enter')handleQRCode(this.value.trim().toUpperCase())">
-        <button class="btn btn-primary" onclick="handleQRCode(document.getElementById('manual-code-input').value.trim().toUpperCase())" style="flex-shrink:0">ยืนยัน</button>
-      </div>
-    </div>`;
-
+  // No camera support at all — just show manual input
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    // No camera API — just show manual input
-    scanStatus.innerHTML = manualHTML;
+    scanStatus.innerHTML = manualInputHTML();
     return;
   }
 
-  // Check if we can query permission state first (not available on all browsers)
-  let permState = 'prompt';
-  try {
-    const ps = await navigator.permissions.query({ name: 'camera' });
-    permState = ps.state; // 'granted' | 'denied' | 'prompt'
-  } catch(e) { /* permissions API not supported, assume prompt */ }
-
-  if (permState === 'denied') {
-    scanStatus.innerHTML = `
-      <div class="alert alert-warn mb-8" style="font-size:12px">กล้องถูกปฏิเสธ — กรุณาอนุญาตกล้องใน Settings แล้วโหลดหน้าใหม่</div>
-      ${manualHTML}`;
-    return;
-  }
-
-  if (permState === 'prompt') {
-    // On mobile, show an explicit tap-to-activate button so the OS permission dialog appears
-    // from a clear user gesture (required by iOS Safari / some Android browsers)
-    scanStatus.innerHTML = `
-      <div id="cam-permission-prompt" style="text-align:center;padding:.75rem 0">
-        <button class="btn btn-primary btn-lg w-full" id="open-cam-btn" onclick="activateCamera()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
-          </svg>
-          เปิดกล้องสแกน QR
-        </button>
-        <p class="text-ter text-xs mt-8">ระบบจะขออนุญาตใช้กล้อง</p>
-      </div>
-      ${manualHTML}`;
-    return;
-  }
-
-  // Permission already granted — open directly
-  await activateCamera();
+  // Always show a tap-to-open-camera button + manual input below
+  // This satisfies iOS/Android user-gesture requirement for camera permission
+  scanStatus.innerHTML = `
+    <button class="btn btn-primary w-full" onclick="activateCamera()" id="open-cam-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      เปิดกล้องสแกน QR
+    </button>
+    ${manualInputHTML()}`;
 }
 
 async function activateCamera() {
-  const video = document.getElementById('qr-video');
+  const video      = document.getElementById('qr-video');
   const scanStatus = document.getElementById('scan-status');
-
-  // Remove permission prompt if present
-  const prompt = document.getElementById('cam-permission-prompt');
-  if (prompt) prompt.remove();
-
-  // Show a small "opening camera…" note
-  let openingNote = document.getElementById('cam-opening-note');
-  if (!openingNote) {
-    openingNote = document.createElement('div');
-    openingNote.id = 'cam-opening-note';
-    openingNote.className = 'alert alert-info mb-8';
-    openingNote.style.fontSize = '12px';
-    openingNote.innerHTML = '<div class="flex items-center gap-8"><div class="spinner"></div> กำลังเปิดกล้อง...</div>';
-    scanStatus.insertBefore(openingNote, scanStatus.firstChild);
-  }
+  const btn        = document.getElementById('open-cam-btn');
+  if (btn) btn.remove();
 
   try {
     currentStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode: { ideal: 'environment' } },
       audio: false
     });
-    openingNote.remove();
     video.srcObject = currentStream;
     await video.play();
     startQRScan(video);
   } catch(e) {
-    openingNote.remove();
-    const note = document.createElement('div');
-    note.className = 'alert alert-warn mb-8';
-    note.style.fontSize = '12px';
-    if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-      note.textContent = 'ไม่ได้รับอนุญาตเปิดกล้อง — พิมพ์ Code ด้วยตนเองได้เลย';
-    } else {
-      note.textContent = 'ไม่สามารถเปิดกล้องได้ — ใช้การพิมพ์ Code แทนได้เลย';
-    }
-    scanStatus.insertBefore(note, scanStatus.firstChild);
+    const warn = document.createElement('div');
+    warn.className = 'alert alert-warn mb-8';
+    warn.style.fontSize = '12px';
+    warn.textContent = e.name === 'NotAllowedError'
+      ? 'ไม่ได้รับอนุญาตเปิดกล้อง — ใช้การพิมพ์ Code ด้านล่างได้เลย'
+      : 'ไม่สามารถเปิดกล้องได้ — ใช้การพิมพ์ Code ด้านล่างได้เลย';
+    scanStatus.insertBefore(warn, scanStatus.firstChild);
   }
 }
 
@@ -884,88 +847,62 @@ function stopCamera() {
   if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
 }
 
+// ─── QR Scanner — uses native BarcodeDetector if available, canvas poll fallback ───
 function startQRScan(video) {
-  if (typeof ZXing === 'undefined') return;
-
-  const hints = new Map();
-  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.QR_CODE]);
-  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-  const reader = new ZXing.BrowserQRCodeReader(hints);
-
-  const canvas  = document.createElement('canvas');
-  const ctx     = canvas.getContext('2d', { willReadFrequently: true });
-  const canvas2 = document.createElement('canvas');
-  const ctx2    = canvas2.getContext('2d', { willReadFrequently: true });
-
   let rafId = null;
-  let frameCount = 0;
+  let active = true;
 
+  // Wrap stopCamera to also kill the poll loop
   const origStop = stopCamera;
-  stopCamera = function() {
-    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    origStop();
-    stopCamera = origStop;
-  };
+  stopCamera = function() { active = false; if (rafId) cancelAnimationFrame(rafId); origStop(); stopCamera = origStop; };
 
-  // Try to decode from a canvas using both binarizers
-  function tryDecode(c) {
-    const lum = new ZXing.HTMLCanvasElementLuminanceSource(c);
-    // Attempt 1: HybridBinarizer (best for sharp images)
-    try {
-      const r = reader.decodeBitmap(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum)));
-      if (r) return r.getText();
-    } catch(e) {}
-    // Attempt 2: GlobalHistogramBinarizer (better for low-contrast / dark images)
-    try {
-      const r = reader.decodeBitmap(new ZXing.BinaryBitmap(new ZXing.GlobalHistogramBinarizer(lum)));
-      if (r) return r.getText();
-    } catch(e) {}
-    return null;
+  // ── Path A: native BarcodeDetector (Chrome Android, iOS 16+, desktop Chrome/Edge) ──
+  if (typeof BarcodeDetector !== 'undefined') {
+    const detector = new BarcodeDetector({ formats: ['qr_code'] });
+    const poll = async () => {
+      if (!active) return;
+      if (video.readyState >= 2 && !video.paused) {
+        try {
+          const results = await detector.detect(video);
+          if (results.length > 0) { handleQRCode(results[0].rawValue); return; }
+        } catch(e) {}
+      }
+      rafId = requestAnimationFrame(poll);
+    };
+    rafId = requestAnimationFrame(poll);
+    return;
   }
 
-  const poll = () => {
-    if (!currentStream) return;
-    if (video.readyState >= 2 && video.videoWidth > 0 && !video.paused) {
-      const vw = video.videoWidth;
-      const vh = video.videoHeight;
-      frameCount++;
+  // ── Path B: canvas snapshot every 250 ms + jsQR (lightweight, no ZXing) ──
+  // Load jsQR on demand if not already loaded
+  function runCanvasScan() {
+    const canvas = document.createElement('canvas');
+    const ctx    = canvas.getContext('2d', { willReadFrequently: true });
+    let   last   = 0;
 
-      // --- Pass A: full frame ---
-      canvas.width  = vw;
-      canvas.height = vh;
-      ctx.drawImage(video, 0, 0);
-      let found = tryDecode(canvas);
-      if (found) { handleQRCode(found); return; }
-
-      // --- Pass B: center crop (60% of frame) — helps when QR is centred and video is large ---
-      const cw = Math.round(vw * 0.6);
-      const ch = Math.round(vh * 0.6);
-      const cx = Math.round((vw - cw) / 2);
-      const cy = Math.round((vh - ch) / 2);
-      canvas2.width  = cw;
-      canvas2.height = ch;
-      ctx2.drawImage(video, cx, cy, cw, ch, 0, 0, cw, ch);
-      found = tryDecode(canvas2);
-      if (found) { handleQRCode(found); return; }
-
-      // --- Pass C: every 3rd frame, try a 2× upscaled center crop ---
-      // Upscaling helps ZXing binarizer when the QR is small on screen
-      if (frameCount % 3 === 0) {
-        const scale = 2;
-        canvas2.width  = cw * scale;
-        canvas2.height = ch * scale;
-        ctx2.drawImage(video, cx, cy, cw, ch, 0, 0, cw * scale, ch * scale);
-        found = tryDecode(canvas2);
-        if (found) { handleQRCode(found); return; }
+    const poll = (ts) => {
+      if (!active) return;
+      if (ts - last > 250 && video.readyState >= 2 && video.videoWidth > 0 && !video.paused) {
+        last = ts;
+        canvas.width  = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const result = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+        if (result) { handleQRCode(result.data); return; }
       }
-    }
+      rafId = requestAnimationFrame(poll);
+    };
     rafId = requestAnimationFrame(poll);
-  };
+  }
 
-  if (video.readyState >= 2) {
-    rafId = requestAnimationFrame(poll);
+  if (typeof jsQR !== 'undefined') {
+    runCanvasScan();
   } else {
-    video.addEventListener('canplay', () => { rafId = requestAnimationFrame(poll); }, { once: true });
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+    s.onload = runCanvasScan;
+    document.head.appendChild(s);
   }
 }
 
