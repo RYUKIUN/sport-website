@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sports Check-in</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <style>
+/* ── Reset & tokens ─────────────────────────────────────── */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --accent:#2997ff;
@@ -17,39 +17,33 @@
   --glass:rgba(255,255,255,0.10);
   --glass-border:rgba(255,255,255,0.18);
   --glass-hover:rgba(255,255,255,0.16);
-  --glass-strong:rgba(255,255,255,0.20);
+  --glass-strong:rgba(255,255,255,0.22);
   --blur:blur(28px) saturate(200%);
   --blur-sm:blur(16px) saturate(180%);
   --text:#fff;
   --text-sec:rgba(255,255,255,0.6);
   --text-ter:rgba(255,255,255,0.35);
-  --shadow:0 8px 32px rgba(0,0,0,0.4);
-  --shadow-sm:0 4px 16px rgba(0,0,0,0.28);
   --r:16px;--r-sm:10px;--r-lg:24px;--r-xl:32px
 }
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;color:var(--text);overflow-x:hidden}
-body{background:radial-gradient(ellipse 120% 80% at 20% -10%,#1a2a4a 0%,transparent 60%),radial-gradient(ellipse 80% 60% at 80% 110%,#1a0a2e 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 60% 50%,#0d1a0d 0%,transparent 70%),#0a0a0f;min-height:100vh}
+body{background:radial-gradient(ellipse 120% 80% at 20% -10%,#1a2a4a 0%,transparent 60%),
+     radial-gradient(ellipse 80% 60% at 80% 110%,#1a0a2e 0%,transparent 60%),
+     radial-gradient(ellipse 60% 80% at 60% 50%,#0d1a0d 0%,transparent 70%),#0a0a0f;min-height:100vh}
 
-/* Glass */
-.glass{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--r)}
+/* ── Glass ──────────────────────────────────────────────── */
 .glass-card{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--r-lg);padding:1.5rem}
-.glass-sm{background:var(--glass);backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);border:1px solid var(--glass-border);border-radius:var(--r-sm)}
 
-/* Buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:.6rem 1.2rem;border-radius:var(--r-sm);border:1px solid var(--glass-border);background:var(--glass);color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);white-space:nowrap}
-.btn:hover{background:var(--glass-hover);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+/* ── Buttons ────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:.6rem 1.2rem;border-radius:var(--r-sm);border:1px solid var(--glass-border);background:var(--glass);color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);white-space:nowrap;font-family:inherit}
+.btn:hover{background:var(--glass-hover);transform:translateY(-1px)}
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .btn-primary{background:var(--accent);border-color:rgba(41,151,255,.5);color:#fff}
-.btn-primary:hover{background:#3aa3ff;border-color:rgba(41,151,255,.7)}
-.btn-success{background:rgba(48,209,88,.18);border-color:rgba(48,209,88,.4);color:var(--green)}
-.btn-danger{background:rgba(255,69,58,.18);border-color:rgba(255,69,58,.4);color:var(--red)}
-.btn-warning{background:rgba(255,214,10,.18);border-color:rgba(255,214,10,.4);color:var(--yellow)}
-.btn-lg{padding:.9rem 1.8rem;font-size:16px;border-radius:var(--r);font-weight:600}
-.btn-xl{padding:1.2rem 2rem;font-size:17px;border-radius:var(--r-lg);font-weight:600;letter-spacing:-.01em;width:100%}
+.btn-primary:hover{background:#3aa3ff}
+.btn-xl{padding:1.1rem 1.8rem;font-size:17px;border-radius:var(--r);font-weight:600;width:100%}
 
-/* Inputs & Selects */
-input[type=text],input[type=password],select,textarea{width:100%;padding:.7rem 1rem;background:rgba(255,255,255,.07);border:1px solid var(--glass-border);border-radius:var(--r-sm);color:var(--text);font-size:14px;outline:none;transition:all .2s;backdrop-filter:var(--blur-sm);font-family:inherit}
+/* ── Inputs ─────────────────────────────────────────────── */
+input[type=text],input[type=password],select{width:100%;padding:.7rem 1rem;background:rgba(255,255,255,.07);border:1px solid var(--glass-border);border-radius:var(--r-sm);color:var(--text);font-size:14px;outline:none;transition:all .2s;font-family:inherit}
 input:focus,select:focus{border-color:var(--accent);background:rgba(41,151,255,.08);box-shadow:0 0 0 3px rgba(41,151,255,.15)}
 input::placeholder{color:var(--text-ter)}
 select{-webkit-appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='rgba(255,255,255,0.4)'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:2rem}
@@ -57,21 +51,14 @@ select option{background:#151520;color:#fff}
 label{font-size:13px;color:var(--text-sec);margin-bottom:6px;display:block;font-weight:500}
 .form-group{margin-bottom:1rem}
 
-/* Tabs */
+/* ── Tabs ────────────────────────────────────────────────── */
 .tabs{display:flex;gap:4px;padding:4px;background:rgba(0,0,0,.35);border-radius:var(--r);border:1px solid var(--glass-border)}
 .tab{flex:1;padding:.5rem .8rem;border-radius:var(--r-sm);border:none;background:transparent;color:var(--text-sec);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;white-space:nowrap;font-family:inherit}
 .tab.active{background:var(--glass-strong);color:var(--text);border:1px solid var(--glass-border)}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
-/* Status dots */
-.dot{width:11px;height:11px;border-radius:50%;display:inline-block;flex-shrink:0;transition:transform .15s}
-.dot-green{background:var(--green);box-shadow:0 0 7px rgba(48,209,88,.55)}
-.dot-red{background:var(--red);box-shadow:0 0 7px rgba(255,69,58,.55)}
-.dot-yellow{background:var(--yellow);box-shadow:0 0 7px rgba(255,214,10,.55)}
-.dot-empty{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28)}
-
-/* Table */
+/* ── Table ───────────────────────────────────────────────── */
 .tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--glass-border)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{padding:.6rem 1rem;text-align:left;color:var(--text-sec);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.05em;background:rgba(255,255,255,.04);border-bottom:1px solid var(--glass-border);white-space:nowrap}
@@ -79,56 +66,28 @@ td{padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);vertical-ali
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.03)}
 
-/* Status badge inline */
-.status-cell{display:flex;align-items:center;gap:7px;font-weight:500;font-size:13px}
-
-/* Modal */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-bg.show{opacity:1;pointer-events:auto}
-.modal{background:rgba(18,18,28,.95);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--r-xl);padding:2rem;width:100%;max-width:440px;transform:scale(.95) translateY(12px);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
-.modal-bg.show .modal{transform:scale(1) translateY(0)}
-
-/* Searchable dropdown */
-.search-wrap{position:relative}
-.search-input{width:100%;padding:.7rem 1rem;background:rgba(255,255,255,.07);border:1px solid var(--glass-border);border-radius:var(--r-sm);color:var(--text);font-size:14px;outline:none;transition:all .2s}
-.search-input:focus{border-color:var(--accent);background:rgba(41,151,255,.08);box-shadow:0 0 0 3px rgba(41,151,255,.15)}
-.search-input::placeholder{color:var(--text-ter)}
-.search-list{position:absolute;top:calc(100% + 6px);left:0;right:0;max-height:240px;overflow-y:auto;background:rgba(14,14,24,.97);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--r);z-index:600;display:none;box-shadow:0 20px 60px rgba(0,0,0,.6)}
-.search-list.show{display:block}
-.search-item{padding:.6rem 1rem;font-size:13px;cursor:pointer;transition:background .12s;border-bottom:1px solid rgba(255,255,255,.04)}
-.search-item:last-child{border-bottom:none}
-.search-item:hover,.search-item.highlighted{background:rgba(41,151,255,.18)}
-.search-list::-webkit-scrollbar{width:4px}
-.search-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
-
-/* Pages */
-.page{display:none;min-height:100vh}
-.page.active{display:flex;flex-direction:column}
-
-/* Alerts */
-.alert{padding:.75rem 1rem;border-radius:var(--r-sm);font-size:13px;font-weight:500;margin-bottom:1rem}
+/* ── Alerts ─────────────────────────────────────────────── */
+.alert{padding:.75rem 1rem;border-radius:var(--r-sm);font-size:13px;font-weight:500}
 .alert-success{background:rgba(48,209,88,.12);border:1px solid rgba(48,209,88,.3);color:var(--green)}
 .alert-error{background:rgba(255,69,58,.12);border:1px solid rgba(255,69,58,.3);color:var(--red)}
 .alert-warn{background:rgba(255,214,10,.12);border:1px solid rgba(255,214,10,.3);color:var(--yellow)}
 .alert-info{background:rgba(41,151,255,.12);border:1px solid rgba(41,151,255,.3);color:var(--accent)}
 
-/* Spinner */
+/* ── Spinner ─────────────────────────────────────────────── */
 .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-.spinner-lg{width:32px;height:32px;border-width:3px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Utilities */
-.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-4{gap:4px}.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}
-.mt-4{margin-top:4px}.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}
-.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
-.text-sec{color:var(--text-sec)}.text-ter{color:var(--text-ter)}.text-sm{font-size:12px}.text-xs{font-size:11px}
-.text-center{text-align:center}.w-full{width:100%}.hidden{display:none!important}
-h1{font-size:2.2rem;font-weight:700;letter-spacing:-.03em;line-height:1.1}
-h2{font-size:1.3rem;font-weight:600;letter-spacing:-.02em}
-h3{font-size:.95rem;font-weight:600}
-.divider{height:1px;background:var(--glass-border);margin:1.5rem 0}
+/* ── Searchable name list ───────────────────────────────── */
+.search-wrap{position:relative}
+.search-list{position:absolute;top:calc(100% + 6px);left:0;right:0;max-height:240px;overflow-y:auto;background:rgba(14,14,24,.97);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--r);z-index:600;display:none;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.search-list.show{display:block}
+.search-item{padding:.65rem 1rem;font-size:13px;cursor:pointer;transition:background .12s;border-bottom:1px solid rgba(255,255,255,.04)}
+.search-item:last-child{border-bottom:none}
+.search-item:hover,.search-item.hi{background:rgba(41,151,255,.18)}
+.search-list::-webkit-scrollbar{width:4px}
+.search-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
 
-/* Camera view */
+/* ── Camera / QR scanner ────────────────────────────────── */
 #qr-video-container{width:100%;max-width:320px;margin:0 auto;position:relative;border-radius:var(--r-lg);overflow:hidden;border:2px solid var(--glass-border)}
 #qr-video{width:100%;display:block;background:#000}
 .scan-overlay{position:absolute;inset:0;pointer-events:none}
@@ -140,51 +99,63 @@ h3{font-size:.95rem;font-weight:600}
 .scan-line{position:absolute;left:16px;right:16px;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:scanline 2s ease-in-out infinite;top:50%}
 @keyframes scanline{0%,100%{top:20%}50%{top:80%}}
 
-/* Stat cards */
-.stat-card{background:var(--glass);backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);border:1px solid var(--glass-border);border-radius:var(--r);padding:1rem 1.25rem;text-align:center}
-.stat-num{font-size:2rem;font-weight:700;letter-spacing:-.03em;line-height:1}
-.stat-label{font-size:11px;color:var(--text-sec);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+/* ── Result screen ──────────────────────────────────────── */
+.result-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
+.result-icon-circle{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:3rem}
+.result-success{background:rgba(48,209,88,.15);border:2px solid rgba(48,209,88,.4)}
+.result-fail{background:rgba(255,69,58,.15);border:2px solid rgba(255,69,58,.4)}
 
-/* QR card */
-.qr-date-card{background:var(--glass);backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);border:1px solid var(--glass-border);border-radius:var(--r);padding:1rem;display:flex;align-items:center;justify-content:space-between;gap:12px}
-
-/* Landing hero */
+/* ── Landing hero ───────────────────────────────────────── */
 .landing-logo{width:80px;height:80px;background:linear-gradient(135deg,rgba(41,151,255,.25),rgba(48,209,88,.15));border:1px solid var(--glass-border);border-radius:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 2rem;backdrop-filter:var(--blur-sm)}
 
-/* Result screen */
-.result-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
-.result-icon{font-size:5rem;line-height:1;margin-bottom:1.5rem}
-.result-icon-circle{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:3rem}
-.result-success-circle{background:rgba(48,209,88,.15);border:2px solid rgba(48,209,88,.4)}
-.result-error-circle{background:rgba(255,69,58,.15);border:2px solid rgba(255,69,58,.4)}
+/* ── Password screen ─────────────────────────────────────── */
+.pass-icon{width:56px;height:56px;border-radius:16px;background:rgba(41,151,255,.15);border:1px solid rgba(41,151,255,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
 
-/* Password modal */
-.pass-lock-icon{width:56px;height:56px;border-radius:16px;background:rgba(41,151,255,.15);border:1px solid rgba(41,151,255,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
+/* ── QR fullscreen modal ─────────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.show{opacity:1;pointer-events:auto}
+.modal{background:rgba(18,18,28,.96);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--r-xl);padding:2rem;width:100%;max-width:360px;text-align:center;transform:scale(.95);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.modal-bg.show .modal{transform:scale(1)}
 
-/* Status change dropdown row */
-.status-select{padding:.3rem .6rem;font-size:12px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(255,255,255,.07);color:var(--text);cursor:pointer;width:auto}
+/* ── Pages ──────────────────────────────────────────────── */
+.page{display:none;min-height:100vh}
+.page.active{display:flex;flex-direction:column}
 
-/* Snapshot cards */
-.snapshot-card{background:var(--glass);backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);border:1px solid var(--glass-border);border-radius:var(--r);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:12px}
+/* ── Setup banner ───────────────────────────────────────── */
+.setup-banner{position:fixed;top:0;left:0;right:0;background:#1a0a0a;border-bottom:1px solid rgba(255,69,58,.4);padding:.6rem 1rem;font-size:12px;text-align:center;color:var(--red);z-index:2000}
 
-/* Super admin section header */
-.section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem}
-.section-dot{width:8px;height:8px;border-radius:50%}
+/* ── Utils ──────────────────────────────────────────────── */
+.flex{display:flex}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}
+.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}
+.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
+.text-sec{color:var(--text-sec)}.text-ter{color:var(--text-ter)}.text-sm{font-size:12px}.text-center{text-align:center}
+.w-full{width:100%}.hidden{display:none!important}
+h1{font-size:2.2rem;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+h2{font-size:1.3rem;font-weight:600;letter-spacing:-.02em}
+h3{font-size:.95rem;font-weight:600}
+
+.passcode-input{font-size:2rem;font-weight:700;letter-spacing:.25em;text-align:center;text-transform:uppercase;padding:1rem;border-radius:var(--r);font-family:'SF Mono','Fira Code',monospace}
 
 /* Responsive */
 @media(max-width:600px){
-  .tabs{overflow-x:auto}.tab{font-size:11px;padding:.5rem .6rem}
+  .tabs{overflow-x:auto}.tab{font-size:11px;padding:.5rem .5rem}
   h1{font-size:1.8rem}
-  .btn-xl{padding:1rem 1.5rem;font-size:16px}
-  td,th{padding:.55rem .7rem}
-  .stat-num{font-size:1.6rem}
+  td,th{padding:.5rem .6rem}
 }
 </style>
 </head>
 <body>
 
 <!-- ═══════════════════════════════════
-     LANDING PAGE
+     SETUP BANNER (shown if API_URL not configured)
+═══════════════════════════════════ -->
+<div class="setup-banner hidden" id="setup-banner">
+  ⚠ ยังไม่ตั้งค่า API_URL — แก้ค่า <code>API_URL</code> ที่ด้านบนของ &lt;script&gt; ในไฟล์นี้ ให้เป็น URL ของ Apps Script Web App (…/exec)
+</div>
+
+<!-- ═══════════════════════════════════
+     LANDING
 ═══════════════════════════════════ -->
 <div class="page active" id="pg-landing" style="align-items:center;justify-content:center;padding:2rem">
   <div style="text-align:center;max-width:460px;width:100%">
@@ -194,8 +165,8 @@ h3{font-size:.95rem;font-weight:600}
         <path d="M8 12l3 3 5-5" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-    <h1 style="margin-bottom:.5rem">Sports Check-in</h1>
-    <p class="text-sec mt-8" style="font-size:15px">ระบบลงทะเบียนเข้าฝึกซ้อม</p>
+    <h1 class="mb-8">Sports Check-in</h1>
+    <p class="text-sec mt-8" style="font-size:15px">ระบบลงทะเบียนเข้าร่วมกิจกรรม</p>
     <div style="margin-top:2.5rem;display:flex;flex-direction:column;gap:12px">
       <button class="btn btn-xl" style="background:linear-gradient(135deg,rgba(41,151,255,.22),rgba(41,151,255,.08));border-color:rgba(41,151,255,.45)" onclick="nav('athlete')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v2h20v-2c0-3.33-6.67-5-10-5z" fill="#2997ff"/></svg>
@@ -210,130 +181,139 @@ h3{font-size:.95rem;font-weight:600}
 </div>
 
 <!-- ═══════════════════════════════════
-     ATHLETE PAGE
+     ATHLETE FLOW
 ═══════════════════════════════════ -->
 <div class="page" id="pg-athlete" style="padding:1.5rem;max-width:540px;margin:0 auto;width:100%">
+
   <div class="flex items-center gap-12 mb-24">
     <button class="btn" onclick="nav('landing')" style="padding:.5rem .8rem;flex-shrink:0">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12l7-7M5 12l7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div>
-      <h2>ลงทะเบียนนักกีฬา</h2>
-      <p class="text-sec text-sm mt-4">ค้นหาชื่อ แล้วกดสแกน QR</p>
+      <h2>ลงทะเบียนเข้าร่วม</h2>
+      <p class="text-sec text-sm mt-8" id="today-label">—</p>
     </div>
   </div>
 
-  <!-- Step 0: Select sport -->
-  <div id="athlete-step-sport">
-    <div class="glass-card" style="margin-bottom:1rem">
-      <h3 class="mb-12">ขั้นตอนที่ 1 — เลือกกีฬาของคุณ</h3>
-      <div id="ath-sport-loading" class="flex items-center gap-8 text-sec text-sm" style="padding:.5rem 0">
-        <div class="spinner"></div>
-        <span id="ath-sport-loading-msg">กำลังเชื่อมต่อเซิร์ฟเวอร์...</span>
+  <!-- Step 1: Select class (tab) -->
+  <div class="glass-card mb-16" id="card-class">
+    <h3 class="mb-12">1 — เลือกห้อง / กลุ่ม</h3>
+    <div id="class-loading" class="flex items-center gap-8 text-sec text-sm">
+      <div class="spinner"></div>
+      <span>กำลังโหลดรายการ...</span>
+    </div>
+    <div id="class-select-wrap" class="hidden">
+      <div class="form-group" style="margin-bottom:0">
+        <label>ห้อง / กลุ่ม</label>
+        <select id="class-select" onchange="onClassSelected()">
+          <option value="">— เลือกห้อง —</option>
+        </select>
       </div>
-      <div id="ath-sport-select-wrap" class="hidden">
-        <div class="form-group" style="margin-bottom:0">
-          <label>กีฬา</label>
-          <select id="ath-sport-select" onchange="onSportSelected()">
-            <option value="">— เลือกกีฬา —</option>
-          </select>
+    </div>
+    <div id="class-error" class="hidden alert alert-error mt-8">
+      โหลดรายการห้องไม่ได้
+      <button class="btn text-sm" onclick="initAthlete()" style="display:block;margin-top:8px;width:100%">ลองใหม่</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Search name -->
+  <div class="glass-card mb-16 hidden" id="card-name">
+    <div class="flex items-center justify-between mb-12">
+      <h3>2 — เลือกชื่อของคุณ</h3>
+      <button class="btn text-sm" onclick="backToClass()" style="padding:.35rem .7rem;font-size:11px">← เปลี่ยนห้อง</button>
+    </div>
+    <div id="name-loading" class="flex items-center gap-8 text-sec text-sm mb-12">
+      <div class="spinner"></div><span>กำลังโหลดรายชื่อ...</span>
+    </div>
+    <div id="name-search-wrap" class="hidden">
+      <label>ค้นหาชื่อ</label>
+      <div class="search-wrap">
+        <input type="text" id="name-search" placeholder="พิมพ์ชื่อหรือรหัส..." autocomplete="off"
+          oninput="filterNames(this.value)" onfocus="filterNames(this.value)">
+        <div class="search-list" id="name-list"></div>
+      </div>
+      <div id="name-selected" class="hidden alert alert-info mt-8" style="margin-bottom:0">
+        <div class="flex items-center gap-8">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="name-selected-text"></span>
         </div>
-      </div>
-      <div id="ath-sport-error" class="hidden alert alert-error mt-8">
-        ไม่สามารถโหลดรายการกีฬาได้
-        <button class="btn text-sm mt-8" onclick="initAthletePage()" style="display:block;margin-top:8px">ลองใหม่</button>
       </div>
     </div>
   </div>
 
-  <!-- Step 1: Search name -->
-  <div id="athlete-step-search" class="hidden">
-    <div class="glass-card" style="margin-bottom:1rem">
-      <div class="flex items-center justify-between mb-12">
-        <h3>ขั้นตอนที่ 2 — ค้นหาชื่อของคุณ</h3>
-        <button class="btn text-sm" onclick="backToSportSelect()" style="padding:.35rem .7rem;font-size:11px">← เปลี่ยนกีฬา</button>
-      </div>
-      <div id="ath-sport-badge" class="alert alert-info mb-12" style="padding:.5rem .75rem;font-size:12px"></div>
-      <div class="form-group">
-        <label>ค้นหาชื่อ / ชื่อเล่น</label>
-        <div class="search-wrap">
-          <input class="search-input" id="ath-search" type="text" placeholder="พิมพ์ชื่อ หรือชื่อเล่น..." oninput="filterAthleteSearch(this.value)" onfocus="filterAthleteSearch(this.value)" autocomplete="off">
-          <div class="search-list" id="ath-search-list"></div>
-        </div>
-      </div>
-      <div id="ath-selected-display" class="hidden">
-        <div class="alert alert-info" style="margin-bottom:0">
-          <div class="flex items-center gap-8">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span id="ath-selected-name"></span>
-          </div>
-        </div>
-      </div>
+  <!-- Step 3: Enter / scan passcode -->
+  <div class="glass-card mb-16 hidden" id="card-code">
+    <div class="flex items-center justify-between mb-16">
+      <h3>3 — ใส่ Passcode หรือสแกน QR</h3>
     </div>
-    <div id="athlete-load-area" class="text-center text-sec text-sm" style="padding:1rem">
-      <div class="flex items-center gap-8" style="justify-content:center">
-        <div class="spinner"></div>
-        <span id="athlete-load-msg">กำลังโหลดรายชื่อนักกีฬา...</span>
-      </div>
+    <div class="form-group">
+      <label>Passcode (6 ตัวอักษร)</label>
+      <input type="text" id="passcode-input" class="passcode-input" maxlength="6"
+        placeholder="A3K9PQ" autocomplete="off" autocorrect="off" spellcheck="false"
+        oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')submitCheckin()">
     </div>
-    <div id="ath-scan-btn-wrap" class="hidden mt-16">
-      <button class="btn btn-primary btn-xl" onclick="goToScan()">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="7" y="7" width="4" height="4" rx="1" stroke="currentColor" stroke-width="2"/><rect x="13" y="7" width="4" height="4" rx="1" stroke="currentColor" stroke-width="2"/><rect x="7" y="13" width="4" height="4" rx="1" stroke="currentColor" stroke-width="2"/><path d="M13 13h4v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="flex gap-8" style="flex-direction:column">
+      <button class="btn btn-primary btn-xl" id="submit-btn" onclick="submitCheckin()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        ยืนยัน Check-in
+      </button>
+      <button class="btn btn-xl" id="scan-btn" onclick="startScan()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="7" y="7" width="4" height="4" rx="1" stroke="currentColor" stroke-width="2"/><rect x="13" y="7" width="4" height="4" rx="1" stroke="currentColor" stroke-width="2"/><rect x="7" y="13" width="4" height="4" rx="1" stroke="currentColor" stroke-width="2"/><path d="M13 13h4v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         สแกน QR Code
       </button>
     </div>
+    <div id="submit-msg" class="hidden mt-12"></div>
   </div>
 
-  <!-- Step 2: Scan QR -->
-  <div id="athlete-step-scan" class="hidden">
-    <div class="glass-card">
-      <div class="flex items-center justify-between mb-16">
-        <h3>สแกน QR Code</h3>
-        <button class="btn text-sm" onclick="cancelScan()" style="padding:.4rem .8rem">ยกเลิก</button>
-      </div>
-      <div id="qr-video-container">
-        <video id="qr-video" playsinline autoplay muted></video>
-        <div class="scan-overlay">
-          <div class="scan-corner scan-corner-tl"></div>
-          <div class="scan-corner scan-corner-tr"></div>
-          <div class="scan-corner scan-corner-bl"></div>
-          <div class="scan-corner scan-corner-br"></div>
-          <div class="scan-line"></div>
-        </div>
-      </div>
-      <p class="text-center text-sec text-sm mt-12">จ่อกล้องไปที่ QR Code ของวันฝึกซ้อมวันนี้</p>
-      <div id="scan-status" class="mt-12"></div>
+  <!-- QR scanner inline -->
+  <div class="glass-card mb-16 hidden" id="card-scan">
+    <div class="flex items-center justify-between mb-16">
+      <h3>สแกน QR Code</h3>
+      <button class="btn text-sm" onclick="stopScan()" style="padding:.4rem .8rem">ยกเลิก</button>
     </div>
+    <div id="qr-video-container">
+      <video id="qr-video" playsinline autoplay muted></video>
+      <canvas id="qr-canvas" style="display:none"></canvas>
+      <div class="scan-overlay">
+        <div class="scan-corner scan-corner-tl"></div>
+        <div class="scan-corner scan-corner-tr"></div>
+        <div class="scan-corner scan-corner-bl"></div>
+        <div class="scan-corner scan-corner-br"></div>
+        <div class="scan-line"></div>
+      </div>
+    </div>
+    <p class="text-center text-sec text-sm mt-12">จ่อกล้องไปที่ QR Code ที่สตาฟแสดง</p>
+    <div id="scan-status" class="mt-12"></div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════
-     ATHLETE RESULT PAGE
+     ATHLETE RESULT
 ═══════════════════════════════════ -->
 <div class="page" id="pg-athlete-result">
-  <div id="ath-result-content"></div>
+  <div class="result-screen" id="result-content"></div>
 </div>
 
 <!-- ═══════════════════════════════════
-     STAFF LOGIN PAGE
+     STAFF LOGIN
 ═══════════════════════════════════ -->
 <div class="page" id="pg-staff-login" style="align-items:center;justify-content:center;padding:2rem">
   <div style="max-width:380px;width:100%">
-    <div class="pass-lock-icon">
+    <div class="pass-icon">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#2997ff" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#2997ff" stroke-width="2" stroke-linecap="round"/></svg>
     </div>
     <div class="text-center mb-24">
       <h2>เข้าสู่ระบบสตาฟ</h2>
-      <p class="text-sec text-sm mt-4">ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
+      <p class="text-sec text-sm mt-8">ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
     </div>
     <div class="glass-card">
       <div class="form-group">
         <label>รหัสผ่าน</label>
-        <input type="password" id="staff-pw-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')staffLogin()">
+        <input type="password" id="pw-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
-      <div id="staff-login-err" class="hidden"></div>
-      <button class="btn btn-primary w-full mt-8" id="staff-login-btn" onclick="staffLogin()">
-        <span id="staff-login-label">เข้าสู่ระบบ</span>
+      <div id="login-err" class="hidden mb-8"></div>
+      <button class="btn btn-primary w-full" id="login-btn" onclick="doLogin()">
+        <span id="login-label">เข้าสู่ระบบ</span>
       </button>
     </div>
     <div class="text-center mt-16">
@@ -345,1095 +325,791 @@ h3{font-size:.95rem;font-weight:600}
 <!-- ═══════════════════════════════════
      STAFF DASHBOARD
 ═══════════════════════════════════ -->
-<div class="page" id="pg-staff" style="padding:1.5rem;max-width:900px;margin:0 auto;width:100%">
+<div class="page" id="pg-staff" style="padding:1.5rem;max-width:960px;margin:0 auto;width:100%">
 
-  <!-- Header -->
   <div class="flex items-center justify-between mb-24 gap-12">
-    <div class="flex items-center gap-12">
-      <button class="btn" onclick="staffLogout()" style="padding:.5rem .8rem;flex-shrink:0" title="ออกจากระบบ">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <div>
-        <h2>Staff Dashboard</h2>
-        <p class="text-sec text-sm mt-4" id="staff-role-badge">สตาฟ</p>
-      </div>
+    <div>
+      <h2>Staff Dashboard</h2>
+      <p class="text-sec text-sm mt-8" id="dash-date-label">—</p>
     </div>
-
+    <button class="btn" onclick="doLogout()" style="padding:.5rem .9rem;flex-shrink:0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      ออก
+    </button>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs mb-24" id="staff-tabs">
-    <button class="tab active" onclick="switchTab('athlete-mgmt')">👤 นักกีฬา</button>
-    <button class="tab" onclick="switchTab('qr-mgmt')">📱 QR Code</button>
-    <button class="tab" onclick="switchTab('database')">🗄️ ฐานข้อมูล</button>
-    <button class="tab" id="tab-sa-btn" onclick="switchTab('superadmin')" style="display:none;color:var(--yellow)">★ Super Admin</button>
+  <div class="tabs mb-24">
+    <button class="tab active" id="tab-btn-qr" onclick="switchTab('qr')">📱 QR & Passcode</button>
+    <button class="tab" id="tab-btn-table" onclick="switchTab('table')">📋 ตารางรหัส</button>
   </div>
 
-  <!-- TAB: Athlete Management -->
-  <div class="tab-panel active" id="tab-athlete-mgmt">
+  <!-- TAB: QR display -->
+  <div class="tab-panel active" id="tab-qr">
     <div class="glass-card mb-16">
-      <div class="flex gap-12 items-center" style="flex-wrap:wrap">
-        <div style="flex:1;min-width:160px">
-          <label>กีฬา</label>
-          <select id="mgmt-sport" onchange="mgmtSportChanged()">
-            <option value="">— เลือกกีฬา —</option>
-          </select>
-        </div>
-        <div style="flex:1;min-width:160px">
-          <label>วันที่</label>
-          <select id="mgmt-date" onchange="loadAthleteTable()" disabled>
-            <option value="">— เลือกวันที่ —</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div id="mgmt-stats" class="hidden mb-16">
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-        <div class="stat-card"><div class="stat-num" id="stat-present" style="color:var(--green)">—</div><div class="stat-label">เข้าร่วม</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-absent" style="color:var(--red)">—</div><div class="stat-label">ขาด</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-excused" style="color:var(--yellow)">—</div><div class="stat-label">ลา / มีเหตุ</div></div>
-      </div>
-    </div>
-
-    <div id="mgmt-table-wrap" class="hidden">
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:36px">สถานะ</th>
-              <th>ชื่อ-นามสกุล</th>
-              <th>ชื่อเล่น</th>
-              <th>กลุ่ม / ห้อง</th>
-              <th>สถานะ</th>
-            </tr>
-          </thead>
-          <tbody id="mgmt-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="mgmt-loading" class="text-center text-sec text-sm hidden" style="padding:2rem">
-      <div class="flex items-center gap-8" style="justify-content:center"><div class="spinner"></div> กำลังโหลด...</div>
-    </div>
-    <div id="mgmt-empty" class="text-center text-sec text-sm hidden" style="padding:2rem">
-      เลือกกีฬาและวันที่เพื่อดูรายชื่อ
-    </div>
-  </div>
-
-  <!-- TAB: QR Management -->
-  <div class="tab-panel" id="tab-qr-mgmt">
-    <div class="glass-card mb-16">
-      <label>เลือกกีฬา</label>
-      <select id="qr-sport" onchange="loadQRCodes()">
-        <option value="">— เลือกกีฬา —</option>
-      </select>
-    </div>
-
-    <div id="qr-loading" class="text-center text-sec text-sm hidden" style="padding:2rem">
-      <div class="flex items-center gap-8" style="justify-content:center"><div class="spinner"></div> กำลังโหลด...</div>
-    </div>
-
-    <div id="qr-content" class="hidden">
-      <div class="flex items-center justify-between mb-16 gap-12" style="flex-wrap:wrap">
-        <h3 id="qr-sport-title"></h3>
-        <button class="btn btn-primary" onclick="downloadAllQR()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          ดาวน์โหลดทั้งหมด (.zip)
+      <div class="flex items-center justify-between mb-12 gap-12" style="flex-wrap:wrap">
+        <h3>เลือกบทบาทเพื่อแสดง QR</h3>
+        <button class="btn" onclick="refreshHashes()" id="refresh-btn" style="flex-shrink:0">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          รีเฟรช Passcode
         </button>
       </div>
-
-      <div id="qr-missing-warn" class="alert alert-warn hidden mb-16">
-        <div class="flex items-center justify-between gap-12">
-          <span>⚠ บางวันยังไม่มี QR Code</span>
-          <button class="btn btn-warning" onclick="generateMissingCodes()" style="font-size:12px;padding:.35rem .8rem;flex-shrink:0">สร้าง Code</button>
+      <div id="role-loading" class="flex items-center gap-8 text-sec text-sm">
+        <div class="spinner"></div><span>กำลังโหลด...</span>
+      </div>
+      <div id="role-select-wrap" class="hidden">
+        <div class="form-group" style="margin-bottom:0">
+          <label>บทบาท (Role)</label>
+          <select id="role-select" onchange="renderQR()">
+            <option value="">— เลือก Role —</option>
+          </select>
         </div>
       </div>
-
-      <!-- Date picker -->
-      <div class="glass-card mb-16">
-        <label>เลือกวันฝึกซ้อม</label>
-        <select id="qr-date-select" onchange="renderSelectedQR()">
-          <option value="">— เลือกวัน —</option>
-        </select>
+      <div id="role-error" class="hidden alert alert-error mt-8">
+        โหลด Role ไม่ได้
+        <button class="btn text-sm" onclick="refreshHashes()" style="display:block;margin-top:8px">ลองใหม่</button>
       </div>
+    </div>
 
-      <!-- Live QR display -->
-      <div id="qr-display" class="hidden glass-card" style="text-align:center">
-        <div id="qr-svg-wrap" style="display:inline-block;padding:16px;background:#fff;border-radius:12px;margin-bottom:12px"></div>
-        <div id="qr-display-date" style="font-weight:700;font-size:16px;margin-bottom:4px"></div>
-        <div id="qr-display-code" style="font-size:12px;color:var(--text-ter);margin-bottom:16px;letter-spacing:.1em"></div>
-        <button class="btn btn-primary w-full" id="qr-dl-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          ดาวน์โหลด QR นี้
+    <div class="glass-card text-center hidden" id="qr-display-card">
+      <p class="text-sec text-sm mb-12" id="qr-display-role"></p>
+      <div id="qr-canvas-wrap" style="display:inline-block;background:#fff;padding:18px;border-radius:16px;margin-bottom:16px"></div>
+      <p style="font-size:2rem;font-weight:700;letter-spacing:.2em;font-family:'SF Mono','Fira Code',monospace" id="qr-passcode-text"></p>
+      <p class="text-ter text-sm mt-8" id="qr-date-text"></p>
+      <div style="margin-top:1.25rem;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="downloadCurrentQR()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          ดาวน์โหลด QR
+        </button>
+        <button class="btn" onclick="openFullscreen()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M8 3H5a2 2 0 00-2 2v3M21 8V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3M16 21h3a2 2 0 002-2v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          เต็มหน้าจอ
         </button>
       </div>
-
-      <div id="qr-no-code" class="hidden alert alert-warn" style="text-align:center">วันนี้ยังไม่มี QR Code</div>
     </div>
-
-    <div id="qr-empty" class="text-center text-sec text-sm hidden" style="padding:2rem">เลือกกีฬาเพื่อดู QR Code</div>
-  </div>
-
-  <!-- TAB: Database -->
-  <div class="tab-panel" id="tab-database">
-    <p class="text-sec text-sm mb-24">ลิงก์เชื่อมต่อ Google Sheets สำหรับจัดการข้อมูล</p>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <a href="https://docs.google.com/spreadsheets/d/1_-VMBH5Mztr09SUsUcmJ5ggEW5PYdxBMx8Xca6OfJrg/edit?pli=1&gid=2112638109#gid=2112638109" target="_blank" class="btn btn-lg w-full" style="text-decoration:none;background:rgba(48,209,88,.12);border-color:rgba(48,209,88,.3);color:var(--green)">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        ข้อมูลนักกีฬา (Athlete Data)
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-left:auto;opacity:.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </a>
-      <a href="https://docs.google.com/spreadsheets/d/1tjnIDFun26bpMofTo9q6u3K_aznCMeYeEVCxil-rQVs/edit?usp=drive_link" target="_blank" class="btn btn-lg w-full" style="text-decoration:none;background:rgba(41,151,255,.12);border-color:rgba(41,151,255,.3);color:var(--accent)">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        ข้อมูลสตาฟ (Staff Data)
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-left:auto;opacity:.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </a>
+    <div class="text-center text-ter text-sm hidden mt-16" id="qr-placeholder">
+      เลือก Role เพื่อแสดง QR Code
     </div>
   </div>
 
-  <!-- TAB: Super Admin (hidden until superadmin login) -->
-  <div class="tab-panel" id="tab-superadmin">
-
-    <!-- Super Admin content — only visible if logged in as superadmin -->
-    <div id="sa-content">
-      <div class="flex items-center justify-between mb-24 gap-12">
-        <div>
-          <h3 style="display:flex;align-items:center;gap:8px"><span style="color:var(--yellow)">★</span> Super Admin Panel</h3>
-          <p class="text-sec text-sm mt-4">Snapshot และ Rollback ข้อมูลการเข้าร่วม</p>
-        </div>
-        <div class="flex gap-8">
-          <button class="btn btn-primary" onclick="createSnapshot()" id="create-snap-btn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2"/><polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2"/></svg>
-            สร้าง Snapshot วันนี้
-          </button>
-          <button class="btn" onclick="loadSnapshots()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            รีเฟรช
-          </button>
-        </div>
-      </div>
-
-      <div id="snap-msg" class="mb-12"></div>
-
-      <div id="snap-loading" class="hidden text-center text-sec text-sm" style="padding:2rem">
-        <div class="flex items-center gap-8" style="justify-content:center"><div class="spinner"></div> กำลังโหลด...</div>
-      </div>
-      <div id="snap-list" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div id="snap-empty" class="glass-card text-center text-sec text-sm hidden" style="padding:2.5rem">
-        <div style="font-size:2rem;margin-bottom:.75rem">📂</div>
-        <p>ยังไม่มี Snapshot</p>
-        <p class="text-ter text-xs mt-4">กดปุ่ม "สร้าง Snapshot วันนี้" เพื่อบันทึกข้อมูลปัจจุบัน</p>
+  <!-- TAB: Full passcode table -->
+  <div class="tab-panel" id="tab-table">
+    <div class="glass-card mb-16">
+      <div class="flex items-center justify-between gap-12" style="flex-wrap:wrap">
+        <h3>ตาราง Passcode ทั้งหมด</h3>
+        <p class="text-sec text-sm" id="table-date-label"></p>
       </div>
     </div>
-
-  </div>
-</div>
-
-<!-- Update status modal -->
-<div class="modal-bg" id="update-status-modal-bg" onclick="closeUpdateStatusModal(event)">
-  <div class="modal" style="max-width:360px">
-    <h3 class="mb-16">เปลี่ยนสถานะ</h3>
-    <div id="update-status-info" class="mb-16 text-sec text-sm"></div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn btn-success btn-lg" onclick="setStatus('present')">
-        <span class="dot dot-green"></span> เข้าร่วม (Present)
-      </button>
-      <button class="btn btn-warning btn-lg" onclick="setStatus('excused')">
-        <span class="dot dot-yellow"></span> ลา / มีเหตุ (Excused)
-      </button>
-      <button class="btn btn-danger btn-lg" onclick="setStatus('absent')">
-        <span class="dot dot-red"></span> ขาด (Absent)
-      </button>
+    <div id="table-loading" class="flex items-center gap-8 text-sec text-sm hidden" style="padding:1rem">
+      <div class="spinner"></div><span>กำลังโหลด...</span>
     </div>
-    <button class="btn w-full mt-12" onclick="document.getElementById('update-status-modal-bg').classList.remove('show')">ยกเลิก</button>
+    <div id="table-wrap" class="tbl-wrap hidden">
+      <table>
+        <thead><tr><th>#</th><th>Role (บทบาท)</th><th>Passcode</th><th>วันที่</th><th></th></tr></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+    <div id="table-empty" class="text-center text-ter text-sm hidden" style="padding:2rem">
+      ยังไม่มีข้อมูล — รีเฟรช Passcode จากแท็บ QR ก่อน
+    </div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════
-     SCRIPTS
+     QR FULLSCREEN MODAL
 ═══════════════════════════════════ -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeFullscreen()">
+  <div class="modal">
+    <p class="text-sec text-sm mb-12" id="modal-role-label"></p>
+    <div id="modal-qr-wrap" style="display:inline-block;background:#fff;padding:20px;border-radius:16px;margin-bottom:16px"></div>
+    <p style="font-size:2.2rem;font-weight:700;letter-spacing:.2em;font-family:'SF Mono','Fira Code',monospace" id="modal-passcode"></p>
+    <p class="text-ter text-sm mt-8" id="modal-date"></p>
+    <button class="btn mt-16" onclick="closeFullscreen()" style="width:100%">ปิด</button>
+  </div>
+</div>
+
+<!-- ── Duplicate check-in warning overlay ──────────────────────────── -->
+<div class="modal-bg" id="warn-modal-bg">
+  <div class="modal" style="border-color:rgba(255,159,10,.35)">
+    <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
+    <p style="font-weight:700;font-size:1.05rem;margin-bottom:12px;color:#ff9f0a">พบการลงทะเบียนซ้ำ</p>
+    <p class="text-sec" style="font-size:.9rem;line-height:1.6;margin-bottom:20px">
+      ระบบตรวจพบการลงทะเบียนมากกว่า 1 ครั้งในวันนี้<br>
+      หากเกิดจากความผิดพลาด กรุณาแจ้งสตาฟทันที<br><br>
+      <strong style="color:#ff453a">หากไม่ใช่ความผิดพลาด ข้อมูลนี้จะถูกบันทึกไว้</strong>
+    </p>
+    <div style="display:flex;gap:10px">
+      <button class="btn" style="flex:1;background:rgba(255,255,255,.08)" onclick="dismissWarnModal()">ยกเลิก</button>
+      <button class="btn" style="flex:1;background:rgba(255,159,10,.2);color:#ff9f0a;border-color:rgba(255,159,10,.4)" onclick="proceedAfterWarn()">ตกลง</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────── -->
 <script>
-// ══════════════════════════════
-// CONFIG — replace with real URL
-// ══════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbx-H_X2_rqDYH3OJ91vkVCJirWKat68NMxw-R_nguWB3cQa0-xxO_yctHKWBzPjXBS64g/exec';
+'use strict';
 
-// ══════════════════════════════
+// ══════════════════════════════════════════════════
+// CONFIG — set this to your Apps Script Web App URL
+// (Deploy → Web app → copy the .../exec URL)
+// ══════════════════════════════════════════════════
+const API_URL = "https://script.google.com/macros/s/AKfycbw1GKsVrnrqRkyp4AQzk_KDjW1m35PHz6lqHmkhlNW-4tiYQqYZ8wPUWX4dN-_LeGQmbA/exec";
+
+// ══════════════════════════════════════════════════
 // STATE
-// ══════════════════════════════
-let sportsData = null;         // [{name, sheet}] from getSportsAndDates
-let trainingDates = [];        // [{date, colIndex}] shared across all sports
-let allAthletes = [];          // flat list for athlete search
-let selectedAthlete = null;    // {rowIndex, firstName, lastName, nickname, sheet, dateColIndex}
-let currentStream = null;      // camera stream
-let codeScanner = null;
-let staffRole = null;          // 'staff' | 'superadmin'
-let currentMgmtSheet = null;
-let currentMgmtDate = null;
-let currentMgmtDateColIndex = null;
-let currentQRSheet = null;
-let currentQRCodes = [];
-let updateStatusTarget = null; // {athleteRowIndex, sheet, dateColIndex}
-const CHECK_KEY = 'sports_checked_';
+// ══════════════════════════════════════════════════
+let allClasses      = [];
+let allAthletes     = [];
+let selectedClass   = null;
+let selectedAthlete = null;
+let scanStream      = null;
+let scanRAF         = null;
+let scanActive      = false;
+let hashData        = [];
 
-// ══════════════════════════════
+// ══════════════════════════════════════════════════
+// API HELPER — GET-only fetch to avoid CORS preflight
+// on the Apps Script /exec endpoint.
+// ══════════════════════════════════════════════════
+async function api(action, params) {
+  if (!API_URL || API_URL.indexOf("REPLACE_WITH") !== -1) {
+    show('setup-banner');
+    const msg = "API_URL ยังไม่ถูกตั้งค่า (ดูแบนเนอร์สีแดงด้านบน)";
+    console.error('[api] ' + msg);
+    throw new Error(msg);
+  }
+  const qs = new URLSearchParams(Object.assign({ action }, params || {}));
+  const url = API_URL + (API_URL.includes('?') ? '&' : '?') + qs.toString();
+  console.log('[api] GET', url);
+
+  let res;
+  try {
+    res = await fetch(url, { method: 'GET', redirect: 'follow' });
+  } catch (e) {
+    console.error('[api] Network error:', e);
+    throw new Error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ (network error): ' + e.message);
+  }
+
+  if (!res.ok) {
+    console.error('[api] HTTP error:', res.status, res.statusText);
+    throw new Error('เซิร์ฟเวอร์ตอบกลับผิดพลาด: HTTP ' + res.status);
+  }
+
+  let json;
+  try {
+    json = await res.json();
+  } catch (e) {
+    console.error('[api] Bad JSON response:', e);
+    throw new Error('เซิร์ฟเวอร์ตอบกลับไม่ใช่ JSON ที่ถูกต้อง');
+  }
+
+  console.log('[api] response', json);
+  if (!json || typeof json !== 'object') {
+    throw new Error('เซิร์ฟเวอร์ตอบกลับรูปแบบไม่ถูกต้อง');
+  }
+  if (json.success === false && json.message) {
+    // Caller decides whether this is fatal — return as-is so business
+    // logic (e.g. wrong passcode) can be shown without throwing.
+  }
+  return json;
+}
+
+// ══════════════════════════════════════════════════
 // NAVIGATION
-// ══════════════════════════════
+// ══════════════════════════════════════════════════
 function nav(page) {
+  switchPage('pg-' + page);
+  if (page === 'athlete') initAthlete();
+}
+function switchPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const target = document.getElementById('pg-' + page);
-  if (target) target.classList.add('active');
-  if (page === 'athlete') initAthletePage();
-  if (page === 'staff') initStaffPage();
+  document.getElementById(id).classList.add('active');
 }
 
-// ══════════════════════════════
-// API HELPER — Retry + Exponential Backoff
-// ══════════════════════════════
-async function api(params, { retries = 3, onRetry = null } = {}) {
-  // All calls via GET query params — avoids CORS preflight which GAS rejects.
-  const qs = new URLSearchParams(params).toString();
-  let lastErr;
-  for (let attempt = 0; attempt < retries; attempt++) {
-    try {
-      const res = await fetch(`${API_URL}?${qs}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json();
-    } catch (e) {
-      lastErr = e;
-      if (attempt < retries - 1) {
-        const waitMs = (2 ** attempt) * 1500; // 1.5s → 3s → 6s
-        if (onRetry) onRetry(attempt + 1, waitMs);
-        await new Promise(r => setTimeout(r, waitMs));
-      }
-    }
-  }
-  throw lastErr;
-}
-
-// ══════════════════════════════
-// LOAD SPORTS DATA (shared)
-// ══════════════════════════════
-async function loadSportsData(opts = {}) {
-  if (sportsData) return sportsData;
-  try {
-    const data = await api({ action: 'getSportsAndDates' }, { retries: 3, onRetry: opts.onRetry });
-    if (data.success) {
-      sportsData = data.sports;
-      trainingDates = data.training_dates || [];
-      return sportsData;
-    }
-  } catch(e) { console.error('loadSportsData:', e); }
-  return [];
-}
-
-// ══════════════════════════════
-// ATHLETE PAGE
-// ══════════════════════════════
-async function initAthletePage() {
-  // Reset all state
+// ══════════════════════════════════════════════════
+// ATHLETE: INIT
+// ══════════════════════════════════════════════════
+function initAthlete() {
+  document.getElementById('today-label').textContent = 'วันที่ ' + today();
+  selectedClass = null;
   selectedAthlete = null;
-  allAthletes = [];
-  document.getElementById('ath-search').value = '';
-  document.getElementById('ath-selected-display').classList.add('hidden');
-  document.getElementById('ath-scan-btn-wrap').classList.add('hidden');
-  document.getElementById('athlete-step-scan').classList.add('hidden');
+  hide('card-name'); hide('card-code'); hide('card-scan');
+  hide('class-select-wrap'); hide('class-error');
+  show('class-loading');
 
-  // Show sport selection step, hide search step
-  document.getElementById('athlete-step-sport').classList.remove('hidden');
-  document.getElementById('athlete-step-search').classList.add('hidden');
-
-  // Show loading state for sport list
-  document.getElementById('ath-sport-loading').classList.remove('hidden');
-  document.getElementById('ath-sport-loading-msg').textContent = 'กำลังเชื่อมต่อเซิร์ฟเวอร์...';
-  document.getElementById('ath-sport-select-wrap').classList.add('hidden');
-  document.getElementById('ath-sport-error').classList.add('hidden');
-
-  try {
-    document.getElementById('ath-sport-loading-msg').textContent = 'กำลังโหลดรายการกีฬา...';
-    const sports = await loadSportsData({
-      onRetry: (attempt, ms) => {
-        document.getElementById('ath-sport-loading-msg').textContent =
-          `เซิร์ฟเวอร์ยุ่ง กำลังลองใหม่ครั้งที่ ${attempt}... (รอ ${ms/1000|0}s)`;
+  api('getAvailableClasses')
+    .then(json => {
+      hide('class-loading');
+      if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
+        console.error('[initAthlete] Bad payload:', json);
+        show('class-error');
+        return;
       }
+      allClasses = json.data;
+      const sel = document.getElementById('class-select');
+      sel.innerHTML = '<option value="">— เลือกห้อง —</option>';
+      allClasses.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c;
+        sel.appendChild(opt);
+      });
+      show('class-select-wrap');
+    })
+    .catch(err => {
+      console.error('[initAthlete] error:', err);
+      hide('class-loading');
+      show('class-error');
     });
-
-    if (!sports || sports.length === 0) throw new Error('no sports');
-
-    // Populate dropdown
-    const sel = document.getElementById('ath-sport-select');
-    sel.innerHTML = '<option value="">— เลือกกีฬา —</option>';
-    sports.forEach((s, i) => {
-      sel.innerHTML += `<option value="${i}">${s.name}</option>`;
-    });
-
-    document.getElementById('ath-sport-loading').classList.add('hidden');
-    document.getElementById('ath-sport-select-wrap').classList.remove('hidden');
-
-  } catch(e) {
-    document.getElementById('ath-sport-loading').classList.add('hidden');
-    document.getElementById('ath-sport-error').classList.remove('hidden');
-  }
 }
 
-async function onSportSelected() {
-  const sel = document.getElementById('ath-sport-select');
-  const sportIdx = sel.value;
-  if (sportIdx === '') return;
-
-  const sport = sportsData[parseInt(sportIdx)];
-  const today = getTodayBE();
-  const todayDate = trainingDates.find(d => d.date === today)
-    || trainingDates[trainingDates.length - 1];
-
-  // Show search step with loading state
-  document.getElementById('athlete-step-sport').classList.add('hidden');
-  document.getElementById('athlete-step-search').classList.remove('hidden');
-  document.getElementById('ath-sport-badge').textContent = `⚽ กีฬา: ${sport.name} — วันที่: ${todayDate ? todayDate.date : 'ไม่พบวันฝึกซ้อม'}`;
-  document.getElementById('ath-search').value = '';
-  document.getElementById('ath-search-list').classList.remove('show');
-  document.getElementById('ath-selected-display').classList.add('hidden');
-  document.getElementById('ath-scan-btn-wrap').classList.add('hidden');
-
-  const loadArea = document.getElementById('athlete-load-area');
-  loadArea.classList.remove('hidden');
-  loadArea.innerHTML = `<div class="flex items-center gap-8" style="justify-content:center">
-    <div class="spinner"></div>
-    <span id="athlete-load-msg" class="text-sec text-sm">กำลังโหลดรายชื่อ ${sport.name}...</span>
-  </div>`;
-
-  allAthletes = [];
-
-  if (!todayDate) {
-    loadArea.innerHTML = `<p class="text-sec text-sm text-center">ไม่พบวันฝึกซ้อมสำหรับวันนี้</p>`;
-    return;
-  }
-
-  try {
-    const res = await api(
-      { action: 'getAthletesByDate', sheet: sport.sheet, date: todayDate.date },
-      {
-        retries: 4,
-        onRetry: (attempt, ms) => {
-          document.getElementById('athlete-load-msg').textContent =
-            `เซิร์ฟเวอร์ยุ่ง กำลังลองใหม่ครั้งที่ ${attempt}... (รอ ${ms/1000|0}s)`;
-        }
-      }
-    );
-
-    if (res.success) {
-      allAthletes = res.athletes.map(a => ({
-        ...a,
-        sheet: sport.sheet,
-        sportName: sport.name,
-        date: todayDate.date,
-        dateColIndex: todayDate.colIndex
-      }));
-    }
-
-    if (allAthletes.length === 0) {
-      loadArea.innerHTML = `<p class="text-sec text-sm text-center">ไม่พบข้อมูลนักกีฬาสำหรับวันนี้</p>`;
-    } else {
-      loadArea.innerHTML = `<p class="text-sec text-sm text-center" style="color:var(--green)">✓ พบ ${allAthletes.length} คน — กดที่ช่องค้นหาเพื่อเลือกชื่อ</p>`;
-    }
-  } catch(e) {
-    loadArea.innerHTML = `<div class="alert alert-error">ไม่สามารถโหลดรายชื่อได้
-      <button class="btn text-sm" onclick="onSportSelected()" style="display:block;margin-top:8px">ลองใหม่</button>
-    </div>`;
-  }
-}
-
-function backToSportSelect() {
-  allAthletes = [];
+// ══════════════════════════════════════════════════
+// ATHLETE: CLASS / NAMES
+// ══════════════════════════════════════════════════
+function onClassSelected() {
+  const val = document.getElementById('class-select').value;
+  if (!val) { hide('card-name'); hide('card-code'); return; }
+  selectedClass = val;
   selectedAthlete = null;
-  document.getElementById('athlete-step-search').classList.add('hidden');
-  document.getElementById('athlete-step-sport').classList.remove('hidden');
-  document.getElementById('ath-sport-select').value = '';
+  document.getElementById('name-search').value = '';
+  document.getElementById('name-selected').classList.add('hidden');
+  hide('card-code');
+  show('card-name');
+  show('name-loading');
+  hide('name-search-wrap');
+
+  api('getNamesForClass', { tabName: val })
+    .then(json => {
+      hide('name-loading');
+      if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
+        console.error('[onClassSelected] Bad payload:', json);
+        setEl('name-loading', '<div class="alert alert-error">โหลดรายชื่อไม่ได้ — ตรวจสอบชื่อแท็บในชีต</div>');
+        show('name-loading');
+        return;
+      }
+      allAthletes = json.data;
+      show('name-search-wrap');
+      filterNames('');
+    })
+    .catch(err => {
+      console.error('[onClassSelected] error:', err);
+      hide('name-loading');
+      setEl('name-loading', '<div class="alert alert-error">' + htmlEsc(err.message) + '</div>');
+      show('name-loading');
+    });
 }
 
-function getTodayBE() {
-  const now = new Date();
-  return `${now.getDate()}/${now.getMonth() + 1}`;
+function backToClass() {
+  selectedClass = null;
+  selectedAthlete = null;
+  hide('card-name'); hide('card-code');
+  document.getElementById('class-select').value = '';
 }
 
-function filterAthleteSearch(q) {
-  if (q === undefined) q = document.getElementById('ath-search').value;
-  const query = q.toLowerCase().trim();
-  const list = document.getElementById('ath-search-list');
-  if (allAthletes.length === 0) { list.classList.remove('show'); return; }
-  const matches = query.length === 0
-    ? allAthletes.slice(0, 30)  // show up to 30 immediately with no filter
-    : allAthletes.filter(a =>
-        a.firstName?.toLowerCase().includes(query) ||
-        a.lastName?.toLowerCase().includes(query) ||
-        a.nickname?.toLowerCase().includes(query)
-      ).slice(0, 15);
-  if (matches.length === 0) {
-    list.innerHTML = `<div class="search-item text-ter">ไม่พบชื่อที่ค้นหา</div>`;
+function filterNames(q) {
+  const list = document.getElementById('name-list');
+  const filtered = q.trim()
+    ? allAthletes.filter(a =>
+        String(a.name).toLowerCase().includes(q.toLowerCase()) ||
+        String(a.index).includes(q) ||
+        String(a.identity).includes(q))
+    : allAthletes;
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="search-item text-ter">ไม่พบชื่อ</div>';
   } else {
-    list.innerHTML = matches.map(a =>
-      `<div class="search-item" onclick="selectAthlete(${allAthletes.indexOf(a)})">
-        <strong>${a.firstName} ${a.lastName}</strong> <span class="text-ter">(${a.nickname || '-'})</span> — <span class="text-sec text-xs">${a.sportName}</span>
+    list.innerHTML = filtered.slice(0, 60).map((a, i) =>
+      `<div class="search-item" data-idx="${i}">
+        <strong>${htmlEsc(a.name)}</strong>
+        <span class="text-ter" style="font-size:11px;margin-left:6px">#${htmlEsc(a.index)} · ${htmlEsc(a.role)}</span>
       </div>`
     ).join('');
+    // attach handlers without inline JSON (avoids quoting issues with Thai text)
+    Array.from(list.querySelectorAll('.search-item')).forEach((el, i) => {
+      if (filtered[i]) el.addEventListener('click', () => selectAthlete(filtered[i]));
+    });
   }
   list.classList.add('show');
 }
 
-function selectAthlete(idx) {
-  selectedAthlete = allAthletes[idx];
-  document.getElementById('ath-search').value = `${selectedAthlete.firstName} ${selectedAthlete.lastName}`;
-  document.getElementById('ath-search-list').classList.remove('show');
-  document.getElementById('ath-selected-name').textContent = `${selectedAthlete.firstName} ${selectedAthlete.lastName} (${selectedAthlete.nickname || '-'}) — ${selectedAthlete.sportName}`;
-  document.getElementById('ath-selected-display').classList.remove('hidden');
-  document.getElementById('ath-scan-btn-wrap').classList.remove('hidden');
+function selectAthlete(a) {
+  console.log('[selectAthlete]', a);
+  selectedAthlete = a;
+  document.getElementById('name-list').classList.remove('show');
+  document.getElementById('name-search').value = a.name;
+  setEl('name-selected-text', '#' + htmlEsc(a.index) + ' — ' + htmlEsc(a.name) + '  ·  ' + htmlEsc(a.role));
+  show('name-selected');
+  document.getElementById('passcode-input').value = '';
+  hide('submit-msg');
+  show('card-code');
+  document.getElementById('passcode-input').focus();
 }
 
-function goToScan() {
-  if (!selectedAthlete) return;
-  document.getElementById('athlete-step-search').classList.add('hidden');
-  document.getElementById('athlete-step-sport').classList.add('hidden');
-  document.getElementById('athlete-step-scan').classList.remove('hidden');
-  startCamera();
+// ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// CHECKIN TOKEN  (localStorage, keyed by dd/mm)
+// One free check-in per day. Subsequent attempts
+// show a warning overlay before allowing proceed.
+// ══════════════════════════════════════════════════
+const TOKEN_PREFIX = 'checkin_token_';
+
+function tokenKey() { return TOKEN_PREFIX + today(); }
+
+function hasUsedToken() {
+  try { return !!localStorage.getItem(tokenKey()); } catch(e) { return false; }
 }
 
-function cancelScan() {
-  stopCamera();
-  document.getElementById('athlete-step-scan').classList.add('hidden');
-  document.getElementById('athlete-step-search').classList.remove('hidden');
+function consumeToken() {
+  try { localStorage.setItem(tokenKey(), '1'); } catch(e) {}
 }
 
-// ─── Manual input HTML — injected in EVERY path so it's always visible ───
-function manualInputHTML() {
-  return `<div id="manual-code-wrap" class="mt-12">
-    <p style="font-size:11px;color:var(--text-ter);text-align:center;margin-bottom:8px">หรือพิมพ์ Code ด้วยตนเอง</p>
-    <div class="flex gap-8">
-      <input type="text" id="manual-code-input" placeholder="ใส่ Code 6 ตัว"
-        style="text-transform:uppercase" maxlength="6"
-        onkeydown="if(event.key==='Enter')handleQRCode(this.value.trim().toUpperCase())">
-      <button class="btn btn-primary" style="flex-shrink:0"
-        onclick="handleQRCode(document.getElementById('manual-code-input').value.trim().toUpperCase())">ยืนยัน</button>
-    </div>
-  </div>`;
+// Pending submit args while warning modal is shown
+let _pendingSubmit = null;
+
+function dismissWarnModal() {
+  document.getElementById('warn-modal-bg').classList.remove('show');
+  _pendingSubmit = null;
 }
 
-async function startCamera() {
-  const scanStatus = document.getElementById('scan-status');
+function proceedAfterWarn() {
+  document.getElementById('warn-modal-bg').classList.remove('show');
+  if (_pendingSubmit) {
+    const args = _pendingSubmit;
+    _pendingSubmit = null;
+    _doCheckIn(args.code, args.ddmm);
+  }
+}
 
-  // No camera support at all — just show manual input
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    scanStatus.innerHTML = manualInputHTML();
+// ══════════════════════════════════════════════════
+// ATHLETE: CHECKIN SUBMIT
+// ══════════════════════════════════════════════════
+function submitCheckin(passcodeOverride) {
+  const code = (passcodeOverride || document.getElementById('passcode-input').value).trim().toUpperCase();
+  if (!selectedClass || !selectedAthlete) {
+    flashMsg('submit-msg', 'error', 'เลือกห้องและชื่อก่อน');
+    console.warn('[submitCheckin] Incomplete selection. class:', selectedClass, 'athlete:', selectedAthlete);
+    return;
+  }
+  if (code.length !== 6) {
+    flashMsg('submit-msg', 'error', 'Passcode ต้องมี 6 ตัว');
+    return;
+  }
+  const ddmm = today();
+
+  if (hasUsedToken()) {
+    console.warn('[submitCheckin] Token exhausted for', ddmm, '— showing warning overlay');
+    _pendingSubmit = { code, ddmm };
+    document.getElementById('warn-modal-bg').classList.add('show');
     return;
   }
 
-  // Always show a tap-to-open-camera button + manual input below
-  // This satisfies iOS/Android user-gesture requirement for camera permission
-  scanStatus.innerHTML = `
-    <button class="btn btn-primary w-full" onclick="activateCamera()" id="open-cam-btn">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
-      </svg>
-      เปิดกล้องสแกน QR
-    </button>
-    ${manualInputHTML()}`;
+  _doCheckIn(code, ddmm);
 }
 
-async function activateCamera() {
-  const video      = document.getElementById('qr-video');
-  const scanStatus = document.getElementById('scan-status');
-  const btn        = document.getElementById('open-cam-btn');
-  if (btn) btn.remove();
+function _doCheckIn(code, ddmm) {
+  console.log('[submitCheckin] tabName=%s row=%s passcode=%s date=%s', selectedClass, selectedAthlete.row, code, ddmm);
 
-  try {
-    currentStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' } },
-      audio: false
-    });
-    video.srcObject = currentStream;
-    await video.play();
-    startQRScan(video);
-  } catch(e) {
-    const warn = document.createElement('div');
-    warn.className = 'alert alert-warn mb-8';
-    warn.style.fontSize = '12px';
-    warn.textContent = e.name === 'NotAllowedError'
-      ? 'ไม่ได้รับอนุญาตเปิดกล้อง — ใช้การพิมพ์ Code ด้านล่างได้เลย'
-      : 'ไม่สามารถเปิดกล้องได้ — ใช้การพิมพ์ Code ด้านล่างได้เลย';
-    scanStatus.insertBefore(warn, scanStatus.firstChild);
-  }
-}
-
-function stopCamera() {
-  if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
-}
-
-// ─── QR Scanner — uses native BarcodeDetector if available, canvas poll fallback ───
-function startQRScan(video) {
-  let rafId = null;
-  let active = true;
-
-  // Wrap stopCamera to also kill the poll loop
-  const origStop = stopCamera;
-  stopCamera = function() { active = false; if (rafId) cancelAnimationFrame(rafId); origStop(); stopCamera = origStop; };
-
-  // ── Path A: native BarcodeDetector (Chrome Android, iOS 16+, desktop Chrome/Edge) ──
-  if (typeof BarcodeDetector !== 'undefined') {
-    const detector = new BarcodeDetector({ formats: ['qr_code'] });
-    const poll = async () => {
-      if (!active) return;
-      if (video.readyState >= 2 && !video.paused) {
-        try {
-          const results = await detector.detect(video);
-          if (results.length > 0) { handleQRCode(results[0].rawValue); return; }
-        } catch(e) {}
-      }
-      rafId = requestAnimationFrame(poll);
-    };
-    rafId = requestAnimationFrame(poll);
-    return;
-  }
-
-  // ── Path B: canvas snapshot every 250 ms + jsQR (lightweight, no ZXing) ──
-  // Load jsQR on demand if not already loaded
-  function runCanvasScan() {
-    const canvas = document.createElement('canvas');
-    const ctx    = canvas.getContext('2d', { willReadFrequently: true });
-    let   last   = 0;
-
-    const poll = (ts) => {
-      if (!active) return;
-      if (ts - last > 250 && video.readyState >= 2 && video.videoWidth > 0 && !video.paused) {
-        last = ts;
-        canvas.width  = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0);
-        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const result = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
-        if (result) { handleQRCode(result.data); return; }
-      }
-      rafId = requestAnimationFrame(poll);
-    };
-    rafId = requestAnimationFrame(poll);
-  }
-
-  if (typeof jsQR !== 'undefined') {
-    runCanvasScan();
-  } else {
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
-    s.onload = runCanvasScan;
-    document.head.appendChild(s);
-  }
-}
-
-async function handleQRCode(code) {
-  if (!code || code.length < 4) return;
-  stopCamera();
-  const scanStatus = document.getElementById('scan-status');
-
-  const setStatus = (icon, msg, type = 'info') =>
-    scanStatus.innerHTML = `<div class="alert alert-${type}"><div class="flex items-center gap-8"><div class="spinner"></div> ${icon} ${msg}</div></div>`;
-
-  // Step 1: resolveCode
-  setStatus('🔍', 'กำลังตรวจสอบ QR Code...');
-  let resolved;
-  try {
-    resolved = await api(
-      {
-        action:       'resolveCode',
-        code,
-        sheet:        selectedAthlete.sheet,
-        dateColIndex: selectedAthlete.dateColIndex,
-      },
-      {
-        retries: 3,
-        onRetry: (attempt, ms) => setStatus('⏳', `เซิร์ฟเวอร์ยุ่ง กำลังลองใหม่ครั้งที่ ${attempt}... (รอ ${ms/1000|0}s)`, 'warn')
-      }
-    );
-  } catch(e) {
-    scanStatus.innerHTML = `<div class="alert alert-error">❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ต</div>
-      <button class="btn mt-8" onclick="retryQR()">ลองอีกครั้ง</button>`;
-    return;
-  }
-
-  if (!resolved.success) {
-    scanStatus.innerHTML = `<div class="alert alert-error">❌ QR Code ไม่ถูกต้อง — ${resolved.error || 'Code not found'}</div>
-      <button class="btn mt-8" onclick="retryQR()">ลองอีกครั้ง</button>`;
-    return;
-  }
-
-  // Step 2: check sport match
-  if (resolved.sheet !== selectedAthlete.sheet) {
-    scanStatus.innerHTML = `<div class="alert alert-error">❌ QR Code นี้เป็นของ "${resolved.sport}" ไม่ตรงกับกีฬาของคุณ</div>
-      <button class="btn mt-8" onclick="retryQR()">ลองอีกครั้ง</button>`;
-    return;
-  }
-
-  // Step 3: checkIn
-  setStatus('✏️', 'กำลังบันทึกการเข้าร่วม...');
-  let checkResult;
-  try {
-    checkResult = await api(
-      { action: 'checkIn', sheet: resolved.sheet, athleteRowIndex: selectedAthlete.rowIndex, dateColIndex: resolved.dateColIndex },
-      {
-        retries: 4,
-        onRetry: (attempt, ms) => setStatus('⏳', `กำลังบันทึก... ลองใหม่ครั้งที่ ${attempt} (รอ ${ms/1000|0}s)`, 'warn')
-      }
-    );
-  } catch(e) {
-    scanStatus.innerHTML = `<div class="alert alert-error">❌ ไม่สามารถบันทึกการเข้าร่วมได้ กรุณาลองใหม่</div>
-      <button class="btn mt-8" onclick="retryQR()">ลองอีกครั้ง</button>`;
-    return;
-  }
-
-  if (checkResult.success) {
-    showAthleteResult('success', selectedAthlete, resolved);
-  } else if (checkResult.error === 'ลงทะเบียนไปแล้ว') {
-    showAthleteResult('already', selectedAthlete, resolved);
-  } else {
-    scanStatus.innerHTML = `<div class="alert alert-error">❌ เกิดข้อผิดพลาด: ${checkResult.error}</div>
-      <button class="btn mt-8" onclick="retryQR()">ลองอีกครั้ง</button>`;
-  }
-}
-
-function retryQR() {
-  document.getElementById('scan-status').innerHTML = '';
-  startCamera();
-}
-
-function showAthleteResult(type, athlete, resolved) {
-  stopCamera();
-  const pg = document.getElementById('pg-athlete-result');
-  let html = '';
-  if (type === 'success') {
-    html = `<div class="result-screen">
-      <div class="result-icon-circle result-success-circle">✓</div>
-      <h1 style="color:var(--green);margin-bottom:.5rem">เช็คอินสำเร็จ!</h1>
-      <p class="text-sec mt-8">${athlete.firstName} ${athlete.lastName}</p>
-      <p class="text-sec text-sm mt-4">${resolved?.sport || athlete.sportName} — ${resolved?.date || athlete.date}</p>
-      <button class="btn btn-success mt-24 btn-lg" onclick="nav('landing')">กลับหน้าหลัก</button>
-    </div>`;
-  } else {
-    html = `<div class="result-screen">
-      <div class="result-icon-circle result-error-circle">⏸</div>
-      <h1 style="color:var(--yellow);margin-bottom:.5rem">เช็คอินแล้ว</h1>
-      <p class="text-sec mt-8">${athlete.firstName} ${athlete.lastName}</p>
-      <p class="text-sec text-sm mt-4">คุณได้ลงทะเบียนไปแล้วในวันนี้</p>
-      <button class="btn mt-24 btn-lg" onclick="nav('landing')">กลับหน้าหลัก</button>
-    </div>`;
-  }
-  pg.innerHTML = html;
-  nav('athlete-result');
-}
-
-// ══════════════════════════════
-// STAFF LOGIN
-// ══════════════════════════════
-async function staffLogin() {
-  const pw = document.getElementById('staff-pw-input').value;
-  if (!pw) return;
-  const btn = document.getElementById('staff-login-btn');
-  const lbl = document.getElementById('staff-login-label');
-  const err = document.getElementById('staff-login-err');
+  const btn = document.getElementById('submit-btn');
   btn.disabled = true;
-  lbl.innerHTML = `<div class="spinner"></div>`;
-  err.classList.add('hidden');
+  btn.innerHTML = '<div class="spinner"></div> กำลังส่ง...';
+  hide('submit-msg');
 
-  try {
-    const res = await api({action: 'verifyPassword', password: pw});
-    if (res.success) {
-      staffRole = res.role;
-      document.getElementById('staff-pw-input').value = '';
-      nav('staff');
-    } else {
-      err.className = 'alert alert-error mt-8';
-      err.textContent = res.error || 'รหัสผ่านไม่ถูกต้อง';
-      err.classList.remove('hidden');
-    }
-  } catch(e) {
-    err.className = 'alert alert-error mt-8';
-    err.textContent = 'ไม่สามารถเชื่อมต่อได้';
-    err.classList.remove('hidden');
-  }
+  api('checkIn', { tabName: selectedClass, row: selectedAthlete.row, passcode: code, ddmm })
+    .then(res => {
+      resetSubmitBtn();
+      if (!res || typeof res !== 'object') {
+        console.error('[submitCheckin] Unexpected response:', res);
+        showResult(false, 'รับข้อมูลจากเซิร์ฟเวอร์ผิดพลาด', null);
+        return;
+      }
+      if (res.success) consumeToken(); // burn token only on actual success
+      showResult(res.success, res.message, res.detail || null);
+    })
+    .catch(err => {
+      console.error('[submitCheckin] error:', err);
+      resetSubmitBtn();
+      showResult(false, err.message, null);
+    });
+}
+
+function resetSubmitBtn() {
+  const btn = document.getElementById('submit-btn');
   btn.disabled = false;
-  lbl.textContent = 'เข้าสู่ระบบ';
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ยืนยัน Check-in';
 }
 
-function staffLogout() {
-  staffRole = null;
-  sportsData = null;
-  trainingDates = [];
-  // Hide SA tab — it must only appear after a fresh superadmin login
-  const saBtn = document.getElementById('tab-sa-btn');
-  if (saBtn) saBtn.style.display = 'none';
-  // Reset active tab back to athlete mgmt
-  switchTab('athlete-mgmt');
-  nav('landing');
+// ══════════════════════════════════════════════════
+// ATHLETE: RESULT PAGE
+// ══════════════════════════════════════════════════
+function showResult(success, message, detail) {
+  stopScan();
+  const name = selectedAthlete ? selectedAthlete.name : '—';
+  const detailHtml = detail
+    ? `<p class="text-sec text-sm mt-8">${htmlEsc(detail.role || '')} · ${htmlEsc(detail.date || '')}</p>`
+    : '';
+
+  document.getElementById('result-content').innerHTML = `
+    <div class="result-icon-circle ${success ? 'result-success' : 'result-fail'}">${success ? '✓' : '✕'}</div>
+    <h2 style="font-size:1.6rem;margin-bottom:.5rem">${htmlEsc(name)}</h2>
+    <p style="font-size:1.1rem;font-weight:600;color:${success ? 'var(--green)' : 'var(--red)'};margin-bottom:.5rem">
+      ${success ? 'Check-in สำเร็จ' : 'Check-in ไม่สำเร็จ'}
+    </p>
+    <p class="text-sec" style="max-width:300px;margin:0 auto">${htmlEsc(message)}</p>
+    ${detailHtml}
+    <button class="btn btn-primary mt-24" onclick="resetAthleteFlow()" style="padding:.8rem 2rem;font-size:15px">← ลงทะเบียนใหม่</button>
+  `;
+  switchPage('pg-athlete-result');
 }
 
-// ══════════════════════════════
-// STAFF DASHBOARD INIT
-// ══════════════════════════════
-async function initStaffPage() {
-  document.getElementById('staff-role-badge').textContent = staffRole === 'superadmin' ? '★ Super Admin' : 'Staff';
-  // Show SA tab ONLY if the login password resolved to superadmin role
-  document.getElementById('tab-sa-btn').style.display = (staffRole === 'superadmin') ? '' : 'none';
-  if (staffRole === 'superadmin') {
-    // Pre-load snapshots ready for when they click the tab
-    loadSnapshots();
+function resetAthleteFlow() {
+  stopScan();
+  selectedAthlete = null;
+  document.getElementById('passcode-input').value = '';
+  document.getElementById('name-search').value = '';
+  document.getElementById('name-selected').classList.add('hidden');
+  hide('card-code'); hide('card-scan'); hide('submit-msg');
+  switchPage('pg-athlete');
+}
+
+// ══════════════════════════════════════════════════
+// ATHLETE: QR SCANNER
+// ══════════════════════════════════════════════════
+async function startScan() {
+  if (typeof jsQR === 'undefined') {
+    console.error('[startScan] jsQR library not loaded.');
+    flashMsg('submit-msg', 'error', 'โหลดไลบรารีสแกน QR ไม่สำเร็จ — กรอก Passcode เองด้านบน');
+    return;
   }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    console.warn('[startScan] getUserMedia not supported.');
+    flashMsg('submit-msg', 'warn', 'เบราว์เซอร์นี้ไม่รองรับการสแกน QR — กรอก Passcode เองด้านบน');
+    return;
+  }
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+  } catch (e) {
+    console.error('[startScan] Camera error:', e);
+    flashMsg('submit-msg', 'error', 'ขอสิทธิ์กล้องไม่ได้: ' + e.message);
+    return;
+  }
+  const video  = document.getElementById('qr-video');
+  const canvas = document.getElementById('qr-canvas');
+  const ctx    = canvas.getContext('2d', { willReadFrequently: true });
+  video.srcObject = scanStream;
+  await video.play();
+  show('card-scan'); hide('card-code');
+  scanActive = true;
+  setEl('scan-status', '');
 
-  const sports = await loadSportsData();
-  const mgmtSel = document.getElementById('mgmt-sport');
-  const qrSel = document.getElementById('qr-sport');
-  mgmtSel.innerHTML = '<option value="">— เลือกกีฬา —</option>';
-  qrSel.innerHTML = '<option value="">— เลือกกีฬา —</option>';
-  sports.forEach(s => {
-    const o1 = new Option(s.name, s.sheet);
-    const o2 = new Option(s.name, s.sheet);
-    mgmtSel.appendChild(o1);
-    qrSel.appendChild(o2);
-  });
-
-  document.getElementById('mgmt-empty').classList.remove('hidden');
-  document.getElementById('mgmt-table-wrap').classList.add('hidden');
-  document.getElementById('mgmt-stats').classList.add('hidden');
+  const tick = () => {
+    if (!scanActive) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      let code = null;
+      try {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        code = jsQR(imageData.data, imageData.width, imageData.height);
+      } catch (e) {
+        console.error('[startScan] decode error:', e);
+      }
+      if (code && code.data) {
+        const raw = code.data.trim().toUpperCase();
+        console.log('[startScan] QR detected:', raw);
+        stopScan();
+        document.getElementById('passcode-input').value = raw;
+        show('card-code');
+        delay(100).then(() => submitCheckin(raw));
+        return;
+      }
+    }
+    scanRAF = requestAnimationFrame(tick);
+  };
+  scanRAF = requestAnimationFrame(tick);
 }
 
-// ══════════════════════════════
-// TAB SWITCHING
-// ══════════════════════════════
-function switchTab(tabId) {
-  document.querySelectorAll('#staff-tabs .tab').forEach(t => t.classList.remove('active'));
-  const allTabs = ['athlete-mgmt','qr-mgmt','database','superadmin'];
-  const idx = allTabs.indexOf(tabId);
-  const tabBtns = document.querySelectorAll('#staff-tabs .tab');
-  if (tabBtns[idx]) tabBtns[idx].classList.add('active');
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + tabId).classList.add('active');
-  // Reload snapshots when navigating to the SA tab
-  if (tabId === 'superadmin') loadSnapshots();
+function stopScan() {
+  scanActive = false;
+  if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = null; }
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  hide('card-scan'); show('card-code');
 }
 
-// ══════════════════════════════
-// ATHLETE MANAGEMENT
-// ══════════════════════════════
-function mgmtSportChanged() {
-  const sheet = document.getElementById('mgmt-sport').value;
-  const dateSel = document.getElementById('mgmt-date');
-  dateSel.innerHTML = '<option value="">— เลือกวันที่ —</option>';
-  document.getElementById('mgmt-table-wrap').classList.add('hidden');
-  document.getElementById('mgmt-stats').classList.add('hidden');
-  document.getElementById('mgmt-empty').classList.remove('hidden');
+// ══════════════════════════════════════════════════
+// STAFF: LOGIN
+// ══════════════════════════════════════════════════
+function doLogin() {
+  const pw = document.getElementById('pw-input').value.trim();
+  if (!pw) { flashEl('login-err', 'error', 'ใส่รหัสผ่านก่อน'); return; }
 
-  if (!sheet || !sportsData) { dateSel.disabled = true; return; }
-  trainingDates.forEach(td => {
-    dateSel.appendChild(new Option(td.date, td.date + '|' + td.colIndex));
-  });
-  dateSel.disabled = false;
-  currentMgmtSheet = sheet;
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  document.getElementById('login-label').textContent = 'กำลังตรวจสอบ...';
+  document.getElementById('login-err').classList.add('hidden');
+
+  api('verifyStaffPassword', { password: pw })
+    .then(res => {
+      btn.disabled = false;
+      document.getElementById('login-label').textContent = 'เข้าสู่ระบบ';
+      if (!res || !res.success) {
+        console.warn('[doLogin] Auth failed:', res && res.message);
+        flashEl('login-err', 'error', (res && res.message) || 'รหัสผ่านไม่ถูกต้อง');
+        return;
+      }
+      document.getElementById('pw-input').value = '';
+      switchPage('pg-staff');
+      initDashboard();
+    })
+    .catch(err => {
+      console.error('[doLogin] error:', err);
+      btn.disabled = false;
+      document.getElementById('login-label').textContent = 'เข้าสู่ระบบ';
+      flashEl('login-err', 'error', err.message);
+    });
 }
 
-async function loadAthleteTable() {
-  const val = document.getElementById('mgmt-date').value;
-  if (!val) return;
-  const [date, colIdx] = val.split('|');
-  currentMgmtDate = date;
-  currentMgmtDateColIndex = parseInt(colIdx);
+function doLogout() {
+  hashData = [];
+  switchPage('pg-landing');
+  document.getElementById('pw-input').value = '';
+}
 
-  document.getElementById('mgmt-empty').classList.add('hidden');
-  document.getElementById('mgmt-table-wrap').classList.add('hidden');
-  document.getElementById('mgmt-stats').classList.add('hidden');
-  document.getElementById('mgmt-loading').classList.remove('hidden');
+// ══════════════════════════════════════════════════
+// STAFF: DASHBOARD INIT
+// ══════════════════════════════════════════════════
+function initDashboard() {
+  const ddmm = today();
+  document.getElementById('dash-date-label').textContent = 'วันที่ ' + ddmm;
+  document.getElementById('table-date-label').textContent = 'วันที่ ' + ddmm;
+  switchTab('qr');
+  refreshHashes();
+}
+
+// ══════════════════════════════════════════════════
+// STAFF: HASH / ROLE LOADING
+// ══════════════════════════════════════════════════
+function refreshHashes() {
+  const ddmm = today();
+  console.log('[refreshHashes] for', ddmm);
+
+  show('role-loading'); hide('role-select-wrap'); hide('role-error');
+  hide('qr-display-card'); hide('qr-placeholder');
+  show('table-loading'); hide('table-wrap'); hide('table-empty');
+
+  const btn = document.getElementById('refresh-btn');
+  btn.disabled = true;
+
+  api('getPreHashTable', { ddmm })
+    .then(json => {
+      btn.disabled = false;
+      hide('role-loading'); hide('table-loading');
+      if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
+        console.error('[refreshHashes] Bad payload:', json);
+        show('role-error'); show('table-empty');
+        return;
+      }
+      hashData = json.data;
+
+      const sel = document.getElementById('role-select');
+      sel.innerHTML = '<option value="">— เลือก Role —</option>';
+      hashData.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h.role; opt.textContent = h.role;
+        sel.appendChild(opt);
+      });
+      show('role-select-wrap');
+      show('qr-placeholder');
+
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+      hashData.forEach((h, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="text-ter text-sm">${i + 1}</td>
+          <td><strong>${htmlEsc(h.role)}</strong></td>
+          <td><code style="font-family:'SF Mono','Fira Code',monospace;font-size:15px;letter-spacing:.15em;color:var(--accent)">${htmlEsc(h.passcode)}</code></td>
+          <td class="text-sec text-sm">${htmlEsc(h.date)}</td>
+          <td></td>`;
+        const td = tr.lastElementChild;
+        const b = document.createElement('button');
+        b.className = 'btn'; b.style.padding = '.3rem .7rem'; b.style.fontSize = '11px';
+        b.textContent = 'QR';
+        b.addEventListener('click', () => showRoleQR(h.role));
+        td.appendChild(b);
+        tbody.appendChild(tr);
+      });
+      show('table-wrap');
+    })
+    .catch(err => {
+      console.error('[refreshHashes] error:', err);
+      btn.disabled = false;
+      hide('role-loading'); hide('table-loading');
+      show('role-error'); show('table-empty');
+    });
+}
+
+// ══════════════════════════════════════════════════
+// STAFF: QR RENDERING
+// ══════════════════════════════════════════════════
+function showRoleQR(role) {
+  switchTab('qr');
+  document.getElementById('role-select').value = role;
+  renderQR();
+}
+
+function renderQR() {
+  const role = document.getElementById('role-select').value;
+  if (!role) { hide('qr-display-card'); show('qr-placeholder'); return; }
+
+  const entry = hashData.find(h => h.role === role);
+  if (!entry) {
+    console.error('[renderQR] Role not found in hashData:', role);
+    hide('qr-display-card');
+    return;
+  }
+  console.log('[renderQR]', entry.role, entry.passcode, entry.date);
+
+  document.getElementById('qr-display-role').textContent = entry.role;
+  document.getElementById('qr-passcode-text').textContent = entry.passcode;
+  document.getElementById('qr-date-text').textContent = 'วันที่ ' + entry.date;
+
+  const wrap = document.getElementById('qr-canvas-wrap');
+  wrap.innerHTML = '';
+  try {
+    new QRCode(wrap, { text: entry.passcode, width: 220, height: 220, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
+  } catch (e) {
+    console.error('[renderQR] QRCode error:', e);
+    wrap.innerHTML = '<p class="text-ter text-sm">สร้าง QR ไม่ได้</p>';
+  }
+  hide('qr-placeholder');
+  show('qr-display-card');
+}
+
+// ══════════════════════════════════════════════════
+// STAFF: FULLSCREEN MODAL
+// ══════════════════════════════════════════════════
+function openFullscreen() {
+  const role = document.getElementById('role-select').value;
+  const entry = hashData.find(h => h.role === role);
+  if (!entry) return;
+
+  document.getElementById('modal-role-label').textContent = entry.role;
+  document.getElementById('modal-passcode').textContent = entry.passcode;
+  document.getElementById('modal-date').textContent = 'วันที่ ' + entry.date;
+
+  const wrap = document.getElementById('modal-qr-wrap');
+  wrap.innerHTML = '';
+  try {
+    new QRCode(wrap, { text: entry.passcode, width: 260, height: 260, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
+  } catch (e) {
+    console.error('[openFullscreen] QRCode error:', e);
+  }
+  document.getElementById('modal-bg').classList.add('show');
+}
+
+function closeFullscreen() {
+  document.getElementById('modal-bg').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════════
+// STAFF: DOWNLOAD QR
+// ══════════════════════════════════════════════════
+async function downloadCurrentQR() {
+  const role = document.getElementById('role-select').value;
+  const entry = hashData.find(h => h.role === role);
+  if (!entry) { console.warn('[downloadCurrentQR] No entry selected'); return; }
+
+  const tempDiv = document.createElement('div');
+  tempDiv.style.position = 'fixed';
+  tempDiv.style.left = '-9999px';
+  document.body.appendChild(tempDiv);
 
   try {
-    const res = await api({action: 'getAthletesByDate', sheet: currentMgmtSheet, date});
-    document.getElementById('mgmt-loading').classList.add('hidden');
-    if (!res.success) { document.getElementById('mgmt-empty').classList.remove('hidden'); return; }
-    renderAthleteTable(res.athletes);
-  } catch(e) {
-    document.getElementById('mgmt-loading').classList.add('hidden');
-    document.getElementById('mgmt-empty').classList.remove('hidden');
+    new QRCode(tempDiv, { text: entry.passcode, width: 256, height: 256, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
+  } catch (e) {
+    console.error('[downloadCurrentQR] QRCode render error:', e);
+    document.body.removeChild(tempDiv);
+    return;
   }
-}
 
-function renderAthleteTable(athletes) {
-  let present = 0, absent = 0, excused = 0;
-  athletes.forEach(a => {
-    if (a.status === 'present') present++;
-    else if (a.status === 'excused') excused++;
-    else absent++;
-  });
+  await delay(120);
 
-  document.getElementById('stat-present').textContent = present;
-  document.getElementById('stat-absent').textContent = absent;
-  document.getElementById('stat-excused').textContent = excused;
-  document.getElementById('mgmt-stats').classList.remove('hidden');
+  const src = tempDiv.querySelector('img') || tempDiv.querySelector('canvas');
+  if (!src) { console.error('[downloadCurrentQR] No QR element rendered'); document.body.removeChild(tempDiv); return; }
 
-  const tbody = document.getElementById('mgmt-tbody');
-  tbody.innerHTML = athletes.map(a => {
-    const dotClass = a.status === 'present' ? 'dot-green' : a.status === 'excused' ? 'dot-yellow' : 'dot-red';
-    const statusTh = a.status === 'present' ? 'เข้าร่วม' : a.status === 'excused' ? 'ลา/มีเหตุ' : 'ขาด';
-    return `<tr>
-      <td><span class="dot ${dotClass}"></span></td>
-      <td><strong>${a.firstName} ${a.lastName}</strong></td>
-      <td class="text-sec">${a.nickname || '—'}</td>
-      <td class="text-sec">${a.room || '—'}</td>
-      <td>
-        <button class="btn text-sm" onclick="openUpdateStatus(${a.rowIndex},'${a.firstName} ${a.lastName}')" style="padding:.35rem .7rem;font-size:11px">
-          <span class="dot ${dotClass}" style="width:8px;height:8px"></span>
-          ${statusTh}
-        </button>
-      </td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('mgmt-table-wrap').classList.remove('hidden');
-}
-
-// ══════════════════════════════
-// UPDATE STATUS
-// ══════════════════════════════
-function openUpdateStatus(rowIndex, name) {
-  updateStatusTarget = {athleteRowIndex: rowIndex, sheet: currentMgmtSheet, dateColIndex: currentMgmtDateColIndex};
-  document.getElementById('update-status-info').textContent = `${name} — ${currentMgmtDate}`;
-  document.getElementById('update-status-modal-bg').classList.add('show');
-}
-
-function closeUpdateStatusModal(e) {
-  if (e.target === document.getElementById('update-status-modal-bg'))
-    document.getElementById('update-status-modal-bg').classList.remove('show');
-}
-
-async function setStatus(status) {
-  if (!updateStatusTarget) return;
-  try {
-    const res = await api({action:'updateStatus', ...updateStatusTarget, status});
-    document.getElementById('update-status-modal-bg').classList.remove('show');
-    if (res.success) loadAthleteTable();
-  } catch(e) {}
-}
-
-// ══════════════════════════════
-// QR MANAGEMENT
-// ══════════════════════════════
-async function loadQRCodes() {
-  const sheet = document.getElementById('qr-sport').value;
-  document.getElementById('qr-content').classList.add('hidden');
-  document.getElementById('qr-empty').classList.add('hidden');
-  if (!sheet) { document.getElementById('qr-empty').classList.remove('hidden'); return; }
-
-  document.getElementById('qr-loading').classList.remove('hidden');
-  currentQRSheet = sheet;
-
-  try {
-    const res = await api({action:'getCodesForSport', sheet});
-    document.getElementById('qr-loading').classList.add('hidden');
-    if (!res.success) { document.getElementById('qr-empty').classList.remove('hidden'); return; }
-    currentQRCodes = res.codes;
-    renderQRList(res);
-  } catch(e) {
-    document.getElementById('qr-loading').classList.add('hidden');
-    document.getElementById('qr-empty').classList.remove('hidden');
-  }
-}
-
-function renderQRList(res) {
-  document.getElementById('qr-sport-title').textContent = res.sport_name;
-  const hasMissing = res.codes.some(c => !c.random_code);
-  document.getElementById('qr-missing-warn').classList.toggle('hidden', !hasMissing);
-
-  // Populate date select
-  const sel = document.getElementById('qr-date-select');
-  sel.innerHTML = '<option value="">— เลือกวัน —</option>' +
-    res.codes.map(c => `<option value="${c.date}" data-code="${c.random_code || ''}">${c.date}${c.random_code ? '' : ' (ไม่มี Code)'}</option>`).join('');
-
-  // Reset display
-  document.getElementById('qr-display').classList.add('hidden');
-  document.getElementById('qr-no-code').classList.add('hidden');
-
-  document.getElementById('qr-content').classList.remove('hidden');
-}
-
-function makeQRCanvas(code) {
-  return new Promise((resolve) => {
-    const div = document.createElement('div');
-    const qr = new QRCode(div, {text: code, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.M});
-    setTimeout(() => {
-      const img = div.querySelector('img') || div.querySelector('canvas');
-      resolve(img);
-    }, 200);
-  });
-}
-
-function renderSelectedQR() {
-  const sel     = document.getElementById('qr-date-select');
-  const opt     = sel.options[sel.selectedIndex];
-  const date    = sel.value;
-  const code    = opt ? opt.dataset.code : '';
-  const display = document.getElementById('qr-display');
-  const noCode  = document.getElementById('qr-no-code');
-
-  display.classList.add('hidden');
-  noCode.classList.add('hidden');
-  if (!date) return;
-  if (!code) { noCode.classList.remove('hidden'); return; }
-
-  const wrap = document.getElementById('qr-svg-wrap');
-  wrap.innerHTML = '<div style="color:var(--text-ter);font-size:12px;padding:1rem">กำลังสร้าง QR...</div>';
-  makeQRCanvas(code).then(el => {
-    wrap.innerHTML = '';
-    el.style.width  = Math.min(window.innerWidth - 96, 280) + 'px';
-    el.style.height = 'auto';
-    el.style.display = 'block';
-    wrap.appendChild(el);
-  });
-
-  document.getElementById('qr-display-date').textContent = date;
-  document.getElementById('qr-display-code').textContent = code;
-  document.getElementById('qr-dl-btn').onclick = () => downloadSingleQR(date, code);
-  display.classList.remove('hidden');
-}
-
-async function downloadSingleQR(date, code) {
-  const el = await makeQRCanvas(code);
   const canvas = document.createElement('canvas');
-  canvas.width = 256; canvas.height = 290;
+  canvas.width = 256; canvas.height = 296;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, 256, 290);
-  if (el.tagName === 'CANVAS') ctx.drawImage(el, 0, 0);
-  else { const img = new Image(); img.src = el.src; await new Promise(r=>{img.onload=r}); ctx.drawImage(img,0,0); }
+  ctx.fillRect(0, 0, 256, 296);
+
+  if (src.tagName === 'CANVAS') {
+    ctx.drawImage(src, 0, 0, 256, 256);
+  } else {
+    const img = new Image();
+    img.src = src.src;
+    await new Promise(r => { img.onload = r; });
+    ctx.drawImage(img, 0, 0, 256, 256);
+  }
+
   ctx.fillStyle = '#000';
-  ctx.font = 'bold 16px -apple-system,sans-serif';
+  ctx.font = 'bold 14px -apple-system,sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(date, 128, 276);
+  ctx.fillText(entry.role + '  ' + entry.passcode, 128, 282);
+
+  document.body.removeChild(tempDiv);
+
   const a = document.createElement('a');
-  a.download = `${date.replace(/\//g,'-')}.png`;
+  a.download = 'QR_' + entry.role + '_' + entry.date.replace(/\//g, '-') + '.png';
   a.href = canvas.toDataURL('image/png');
   a.click();
+  console.log('[downloadCurrentQR] Downloaded:', a.download);
 }
 
-async function downloadAllQR() {
-  const codes = currentQRCodes.filter(c => c.random_code);
-  if (!codes.length) return;
-  const zip = new JSZip();
-  for (const c of codes) {
-    const el = await makeQRCanvas(c.random_code);
-    const canvas = document.createElement('canvas');
-    canvas.width = 256; canvas.height = 290;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, 256, 290);
-    if (el.tagName === 'CANVAS') ctx.drawImage(el, 0, 0);
-    else { const img = new Image(); img.src = el.src; await new Promise(r=>{img.onload=r}); ctx.drawImage(img,0,0); }
-    ctx.fillStyle = '#000';
-    ctx.font = 'bold 16px -apple-system,sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(c.date, 128, 276);
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-    zip.file(`${c.date.replace(/\//g,'-')}.png`, blob);
-  }
-  const content = await zip.generateAsync({type:'blob'});
-  const a = document.createElement('a');
-  a.download = `${currentQRSheet}_QRCodes.zip`;
-  a.href = URL.createObjectURL(content);
-  a.click();
+// ══════════════════════════════════════════════════
+// STAFF: TAB SWITCHING
+// ══════════════════════════════════════════════════
+function switchTab(name) {
+  ['qr', 'table'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === name);
+    document.getElementById('tab-btn-' + t).classList.toggle('active', t === name);
+  });
 }
 
-async function generateMissingCodes() {
-  try {
-    const res = await api({action:'fillMissingCodes'});
-    if (res.success) { sportsData = null; loadQRCodes(); }
-  } catch(e) {}
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+function today() {
+  const now = new Date();
+  return String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0');
 }
-
-// ══════════════════════════════
-// SUPER ADMIN TAB
-// ══════════════════════════════
-async function loadSnapshots() {
-  const loading = document.getElementById('snap-loading');
-  const list = document.getElementById('snap-list');
-  const empty = document.getElementById('snap-empty');
-  loading.classList.remove('hidden');
-  list.innerHTML = '';
-  empty.classList.add('hidden');
-  try {
-    const res = await api({action:'listSnapshots'});
-    loading.classList.add('hidden');
-    if (!res.success || !res.snapshots || res.snapshots.length === 0) {
-      empty.classList.remove('hidden');
-      return;
-    }
-    const snaps = [...res.snapshots].reverse();
-    list.innerHTML = snaps.map(s => `
-      <div class="snapshot-card">
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:15px">${s.date}</div>
-          <div class="text-ter text-xs mt-4">
-            ${(s.sizeKB||0).toFixed(1)} KB
-            ${s.createdAt ? ' · ' + new Date(s.createdAt).toLocaleString('th-TH') : ''}
-          </div>
-        </div>
-        <button class="btn btn-danger" onclick="revertSnapshot('${s.date}')" style="padding:.45rem .9rem;font-size:12px;flex-shrink:0">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M3.51 15a9 9 0 1.49-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Rollback
-        </button>
-      </div>`).join('');
-  } catch(e) {
-    loading.classList.add('hidden');
-    empty.classList.remove('hidden');
-  }
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function setEl(id, html) { document.getElementById(id).innerHTML = html; }
+function htmlEsc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
-async function createSnapshot() {
-  const btn = document.getElementById('create-snap-btn');
-  const msg = document.getElementById('snap-msg');
-  btn.disabled = true;
-  msg.innerHTML = `<div class="alert alert-info"><div class="flex items-center gap-8"><div class="spinner"></div> กำลังสร้าง Snapshot (อาจใช้เวลาสักครู่)...</div></div>`;
-  try {
-    const res = await api({action:'createSnapshot'});
-    if (res.success) {
-      msg.innerHTML = `<div class="alert alert-success">✓ สร้าง Snapshot สำเร็จ</div>`;
-      loadSnapshots();
-    } else {
-      msg.innerHTML = `<div class="alert alert-error">❌ ${res.error || 'เกิดข้อผิดพลาด'}</div>`;
-    }
-  } catch(e) {
-    msg.innerHTML = `<div class="alert alert-error">❌ ไม่สามารถเชื่อมต่อได้</div>`;
-  }
-  btn.disabled = false;
-  setTimeout(() => { msg.innerHTML = ''; }, 5000);
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+function flashMsg(id, type, text) {
+  const el = document.getElementById(id);
+  el.innerHTML = `<div class="alert alert-${type}">${htmlEsc(text)}</div>`;
+  el.classList.remove('hidden');
 }
+function flashEl(id, type, text) { flashMsg(id, type, text); }
 
-async function revertSnapshot(date) {
-  if (!confirm(`Rollback ข้อมูลทั้งหมดกลับเป็น Snapshot วันที่ ${date}?\nการกระทำนี้จะเขียนทับข้อมูลปัจจุบันทั้งหมด และไม่สามารถยกเลิกได้`)) return;
-  const msg = document.getElementById('snap-msg');
-  msg.innerHTML = `<div class="alert alert-warn"><div class="flex items-center gap-8"><div class="spinner"></div> กำลัง Rollback... อาจใช้เวลาสักครู่</div></div>`;
-  try {
-    const res = await api({action:'revertToSnapshot', date});
-    if (res.success) msg.innerHTML = `<div class="alert alert-success">✓ Rollback สำเร็จแล้ว ข้อมูลถูกคืนค่าเป็นวันที่ ${date}</div>`;
-    else msg.innerHTML = `<div class="alert alert-error">❌ ${res.error || 'เกิดข้อผิดพลาด'}</div>`;
-  } catch(e) {
-    msg.innerHTML = `<div class="alert alert-error">❌ ไม่สามารถเชื่อมต่อได้</div>`;
-  }
-  setTimeout(() => { msg.innerHTML = ''; }, 6000);
-}
-
-// ══════════════════════════════
-// CLOSE DROPDOWNS ON OUTSIDE CLICK
-// ══════════════════════════════
+// Close name dropdown on outside click + close modal on Escape
 document.addEventListener('click', e => {
-  if (!e.target.closest('.search-wrap')) {
+  if (!e.target.closest('.search-wrap'))
     document.querySelectorAll('.search-list').forEach(l => l.classList.remove('show'));
-  }
-  // Close update-status modal on backdrop click
-  const usModal = document.getElementById('update-status-modal-bg');
-  if (e.target === usModal) usModal.classList.remove('show');
 });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscreen(); });
+
+// ══════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════
+if (!API_URL || API_URL.indexOf("REPLACE_WITH") !== -1) {
+  show('setup-banner');
+  console.error('[boot] API_URL is not configured. Edit the API_URL constant near the top of the <script> tag.');
+}
 </script>
 </body>
 </html>
