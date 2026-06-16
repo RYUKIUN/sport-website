@@ -9,1285 +9,320 @@
 <style>
 /* ── Reset & tokens ─────────────────────────────────────── */
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --accent:#2997ff;
-  --green:#30d158;
-  --red:#ff453a;
-  --yellow:#ffd60a;
-  --glass:rgba(255,255,255,0.10);
-  --glass-border:rgba(255,255,255,0.18);
-  --glass-hover:rgba(255,255,255,0.16);
-  --glass-strong:rgba(255,255,255,0.22);
-  --blur:blur(28px) saturate(200%);
-  --blur-sm:blur(16px) saturate(180%);
-  --text:#fff;
-  --text-sec:rgba(255,255,255,0.6);
-  --text-ter:rgba(255,255,255,0.35);
-  --r:16px;--r-sm:10px;--r-lg:24px;--r-xl:32px
-}
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;color:var(--text);overflow-x:hidden}
-body{background:radial-gradient(ellipse 120% 80% at 20% -10%,#1a2a4a 0%,transparent 60%),
-     radial-gradient(ellipse 80% 60% at 80% 110%,#1a0a2e 0%,transparent 60%),
-     radial-gradient(ellipse 60% 80% at 60% 50%,#0d1a0d 0%,transparent 70%),#0a0a0f;min-height:100vh}
+:root{\n  --accent:#2997ff;\n  --green:#30d158;\n  --red:#ff453a;\n  --yellow:#ffd60a;\n  --glass:rgba(255,255,255,0.10);\n  --glass-border:rgba(255,255,255,0.18);\n  --glass-hover:rgba(255,255,255,0.16);\n  --glass-strong:rgba(255,255,255,0.22);\n  --blur:blur(28px) saturate(200%);\n  --blur-sm:blur(16px) saturate(180%);\n  --text:#fff;\n  --text-sec:rgba(255,255,255,0.6);\n  --text-ter:rgba(255,255,255,0.4);\n  --bg:#000;\n}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.space-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:radial-gradient(circle at 50% 50%,#1a1a2e 0%,#000000 100%)}
 
-/* ── Glass ──────────────────────────────────────────────── */
-.glass-card{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--r-lg);padding:1.5rem}
+/* ── Layout & Core ──────────────────────────────────────── */
+.app-container{width:100%;max-width:540px;margin:0 auto;padding:20px;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between}
+header{margin-bottom:28px;text-align:center}
+header h1{font-size:26px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px}
+.subtitle{color:var(--text-sec);font-size:14px}
+.page{display:none;animation:fadeIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── Buttons ────────────────────────────────────────────── */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:.6rem 1.2rem;border-radius:var(--r-sm);border:1px solid var(--glass-border);background:var(--glass);color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);white-space:nowrap;font-family:inherit}
-.btn:hover{background:var(--glass-hover);transform:translateY(-1px)}
-.btn:active{transform:scale(.97)}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.btn-primary{background:var(--accent);border-color:rgba(41,151,255,.5);color:#fff}
-.btn-primary:hover{background:#3aa3ff}
-.btn-xl{padding:1.1rem 1.8rem;font-size:17px;border-radius:var(--r);font-weight:600;width:100%}
+/* ── UI Elements ────────────────────────────────────────── */
+.glass-card{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:18px;padding:24px;box-shadow:0 8px 32px 0 rgba(0,0,0,0.37);margin-bottom:20px}
+.btn{width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{opacity:0.9;transform:scale(0.99)}
+.btn:active{transform:scale(0.97)}
+.btn-secondary{background:var(--glass-strong);border:1px solid var(--glass-border)}
+.btn-red{background:var(--red)}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+input,select{width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);border-radius:12px;color:#fff;font-size:16px;outline:none;transition:all 0.2s ease;margin-bottom:16px}
+input:focus,select:focus{border-color:var(--accent);background:rgba(255,255,255,0.1)}
 
-/* ── Inputs ─────────────────────────────────────────────── */
-input[type=text],input[type=password],select{width:100%;padding:.7rem 1rem;background:rgba(255,255,255,.07);border:1px solid var(--glass-border);border-radius:var(--r-sm);color:var(--text);font-size:14px;outline:none;transition:all .2s;font-family:inherit}
-input:focus,select:focus{border-color:var(--accent);background:rgba(41,151,255,.08);box-shadow:0 0 0 3px rgba(41,151,255,.15)}
-input::placeholder{color:var(--text-ter)}
-select{-webkit-appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='rgba(255,255,255,0.4)'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:2rem}
-select option{background:#151520;color:#fff}
-label{font-size:13px;color:var(--text-sec);margin-bottom:6px;display:block;font-weight:500}
-.form-group{margin-bottom:1rem}
-
-/* ── Tabs ────────────────────────────────────────────────── */
-.tabs{display:flex;gap:4px;padding:4px;background:rgba(0,0,0,.35);border-radius:var(--r);border:1px solid var(--glass-border)}
-.tab{flex:1;padding:.5rem .8rem;border-radius:var(--r-sm);border:none;background:transparent;color:var(--text-sec);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;white-space:nowrap;font-family:inherit}
-.tab.active{background:var(--glass-strong);color:var(--text);border:1px solid var(--glass-border)}
+/* Tabs styling */
+.tabs{display:flex;gap:8px;background:rgba(255,255,255,0.05);padding:4px;border-radius:12px;border:1px solid var(--glass-border)}
+.tab{flex:1;padding:10px;background:none;border:none;color:var(--text-sec);font-size:14px;font-weight:500;cursor:pointer;border-radius:8px;transition:all 0.2s}
+.tab.active{background:var(--glass-strong);color:#fff;font-weight:600}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
-/* ── Table ───────────────────────────────────────────────── */
-.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--glass-border)}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{padding:.6rem 1rem;text-align:left;color:var(--text-sec);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.05em;background:rgba(255,255,255,.04);border-bottom:1px solid var(--glass-border);white-space:nowrap}
-td{padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,.03)}
-
-/* ── Alerts ─────────────────────────────────────────────── */
-.alert{padding:.75rem 1rem;border-radius:var(--r-sm);font-size:13px;font-weight:500}
-.alert-success{background:rgba(48,209,88,.12);border:1px solid rgba(48,209,88,.3);color:var(--green)}
-.alert-error{background:rgba(255,69,58,.12);border:1px solid rgba(255,69,58,.3);color:var(--red)}
-.alert-warn{background:rgba(255,214,10,.12);border:1px solid rgba(255,214,10,.3);color:var(--yellow)}
-.alert-info{background:rgba(41,151,255,.12);border:1px solid rgba(41,151,255,.3);color:var(--accent)}
-
-/* ── Spinner ─────────────────────────────────────────────── */
-.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── Searchable name list ───────────────────────────────── */
+/* Search Dropdown component */
 .search-wrap{position:relative}
-.search-list{position:absolute;top:calc(100% + 6px);left:0;right:0;max-height:240px;overflow-y:auto;background:rgba(14,14,24,.97);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--r);z-index:600;display:none;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.search-list{position:absolute;top:100%;left:0;width:100%;background:rgba(20,20,20,0.95);backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);border:1px solid var(--glass-border);border-radius:12px;max-height:220px;overflow-y:auto;z-index:99;display:none;margin-top:4px;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
 .search-list.show{display:block}
-.search-item{padding:.65rem 1rem;font-size:13px;cursor:pointer;transition:background .12s;border-bottom:1px solid rgba(255,255,255,.04)}
+.search-item{padding:12px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05);font-size:15px;transition:background 0.2s}
+.search-item:hover{background:var(--accent)}
 .search-item:last-child{border-bottom:none}
-.search-item:hover,.search-item.hi{background:rgba(41,151,255,.18)}
-.search-list::-webkit-scrollbar{width:4px}
-.search-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
 
-/* ── Camera / QR scanner ────────────────────────────────── */
-#qr-video-container{width:100%;max-width:320px;margin:0 auto;position:relative;border-radius:var(--r-lg);overflow:hidden;border:2px solid var(--glass-border)}
-#qr-video{width:100%;display:block;background:#000}
-.scan-overlay{position:absolute;inset:0;pointer-events:none}
-.scan-corner{position:absolute;width:32px;height:32px;border-color:var(--accent);border-style:solid}
-.scan-corner-tl{top:12px;left:12px;border-width:3px 0 0 3px;border-radius:4px 0 0 0}
-.scan-corner-tr{top:12px;right:12px;border-width:3px 3px 0 0;border-radius:0 4px 0 0}
-.scan-corner-bl{bottom:12px;left:12px;border-width:0 0 3px 3px;border-radius:0 0 0 4px}
-.scan-corner-br{bottom:12px;right:12px;border-width:0 3px 3px 0;border-radius:0 0 4px 0}
-.scan-line{position:absolute;left:16px;right:16px;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:scanline 2s ease-in-out infinite;top:50%}
-@keyframes scanline{0%,100%{top:20%}50%{top:80%}}
+/* Table styling */
+.tbl-wrap{width:100%;overflow-x:auto;border-radius:12px;border:1px solid var(--glass-border);background:rgba(0,0,0,0.2)}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}
+th,td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06)}
+th{background:rgba(255,255,255,0.04);color:var(--text-sec);font-weight:600}
+tr:last-child td{border-bottom:none}
+.text-center{text-align:center}
 
-/* ── Result screen ──────────────────────────────────────── */
-.result-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
-.result-icon-circle{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:3rem}
-.result-success{background:rgba(48,209,88,.15);border:2px solid rgba(48,209,88,.4)}
-.result-fail{background:rgba(255,69,58,.15);border:2px solid rgba(255,69,58,.4)}
+/* Summary Feature UI Component Style */
+.summary-bar-row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.summary-bar-labels{display:flex;justify-content:between;font-size:13px;font-weight:500}
+.summary-bar-bg{width:100%;height:14px;background:rgba(255,255,255,0.05);border-radius:7px;overflow:hidden;border:1px solid var(--glass-border);display:flex}
+.summary-bar-fill-nodata{height:100%;background:linear-gradient(90deg,var(--red),#ff7b72);transition:width 0.4s ease}
+.summary-bar-fill-hasdata{height:100%;background:linear-gradient(90deg,var(--green),#58ff80);transition:width 0.4s ease}
 
+/* Camera scan viewport */
+.scanner-container{position:relative;width:100%;aspect-ratio:1;background:#000;border-radius:16px;overflow:hidden;border:1px solid var(--glass-border);margin-bottom:16px}
+#webcam-preview{width:100%;height:100%;object-fit:cover}
+.scan-laser{position:absolute;top:0;left:0;width:100%;height:3px;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:laserMove 2s infinite linear}
+@keyframes laserMove{0%{top:0%}50%{top:100%}100%{top:0%}}
 
-/* ── Attendance summary ────────────────────────────────── */
-.summary-controls{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
-.summary-controls .form-group{flex:1;min-width:220px;margin-bottom:0}
-.summary-note{font-size:12px;color:var(--text-sec)}
-.summary-shell{display:flex;flex-direction:column;gap:16px}
-.summary-chart{display:flex;flex-direction:column;gap:12px}
-.summary-row{display:grid;grid-template-columns:minmax(130px,1.25fr) minmax(160px,2fr) auto;gap:12px;align-items:center}
-.summary-label{font-weight:700;font-size:14px;line-height:1.2}
-.summary-track{height:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:999px;overflow:hidden}
-.summary-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(41,151,255,.95),rgba(48,209,88,.95));min-width:2px}
-.summary-meta{font-size:12px;color:var(--text-sec);white-space:nowrap}
-.summary-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
-.summary-card{padding:1rem;border-radius:var(--r-lg);border:1px solid var(--glass-border);background:rgba(255,255,255,.05)}
-.summary-card h4{font-size:1rem;margin-bottom:10px}
-.summary-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-.summary-stat{padding:.6rem .45rem;border-radius:14px;background:rgba(255,255,255,.06);text-align:center}
-.summary-stat span{display:block;font-size:10px;color:var(--text-sec);margin-bottom:2px}
-.summary-stat strong{display:block;font-size:18px;line-height:1}
-.summary-empty{padding:2rem;text-align:center;color:var(--text-ter)}
-/* ── Landing hero ───────────────────────────────────────── */
-.landing-logo{width:80px;height:80px;background:linear-gradient(135deg,rgba(41,151,255,.25),rgba(48,209,88,.15));border:1px solid var(--glass-border);border-radius:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 2rem;backdrop-filter:var(--blur-sm)}
-
-/* ── Password screen ─────────────────────────────────────── */
-.pass-icon{width:56px;height:56px;border-radius:16px;background:rgba(41,151,255,.15);border:1px solid rgba(41,151,255,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
-
-/* ── QR fullscreen modal ─────────────────────────────────── */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-bg.show{opacity:1;pointer-events:auto}
-.modal{background:rgba(18,18,28,.96);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--r-xl);padding:2rem;width:100%;max-width:360px;text-align:center;transform:scale(.95);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
-.modal-bg.show .modal{transform:scale(1)}
-
-/* ── Pages ──────────────────────────────────────────────── */
-.page{display:none;min-height:100vh}
-.page.active{display:flex;flex-direction:column}
-
-/* ── Setup banner ───────────────────────────────────────── */
-.setup-banner{position:fixed;top:0;left:0;right:0;background:#1a0a0a;border-bottom:1px solid rgba(255,69,58,.4);padding:.6rem 1rem;font-size:12px;text-align:center;color:var(--red);z-index:2000}
-
-/* ── Utils ──────────────────────────────────────────────── */
-.flex{display:flex}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}
-.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}
-.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}
+/* Helpers */
 .mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
-.text-sec{color:var(--text-sec)}.text-ter{color:var(--text-ter)}.text-sm{font-size:12px}.text-center{text-align:center}
-.w-full{width:100%}.hidden{display:none!important}
-h1{font-size:2.2rem;font-weight:700;letter-spacing:-.03em;line-height:1.1}
-h2{font-size:1.3rem;font-weight:600;letter-spacing:-.02em}
-h3{font-size:.95rem;font-weight:600}
-
-.passcode-input{font-size:2rem;font-weight:700;letter-spacing:.25em;text-align:center;text-transform:uppercase;padding:1rem;border-radius:var(--r);font-family:'SF Mono','Fira Code',monospace}
-
-/* Responsive */
-@media(max-width:600px){
-  .tabs{overflow-x:auto}.tab{font-size:11px;padding:.5rem .5rem}
-  h1{font-size:1.8rem}
-  td,th{padding:.5rem .6rem}
-}
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:between}.justify-center{justify-content:center}
+.gap-8{gap:8px}.gap-12{gap:12px}.flex-col{flex-direction:column}
+.text-accent{color:var(--accent)}.text-sec{color:var(--text-sec)}.text-ter{color:var(--text-ter)}
+.hidden{display:none !important}
+.alert{padding:14px;border-radius:12px;font-size:14px;font-weight:500;line-height:1.4}
+.alert-error{background:rgba(255,69,58,0.15);border:1px solid rgba(255,69,58,0.3);color:#ff453a}
+.alert-success{background:rgba(48,209,88,0.15);border:1px solid rgba(48,209,88,0.3);color:#30d158}
+.alert-warn{background:rgba(255,214,10,0.15);border:1px solid rgba(255,214,10,0.3);color:#ffd60a}
+.spinner{width:20px;height:20px;border:2.5px solid rgba(255,255,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s infinite linear}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{text-align:center;padding:16px 0;font-size:12px;color:var(--text-ter);border-top:1px solid rgba(255,255,255,0.05);margin-top:28px}
 </style>
 </head>
 <body>
+<div class="space-bg"></div>
 
-<!-- ═══════════════════════════════════
-     SETUP BANNER (shown if API_URL not configured)
-═══════════════════════════════════ -->
-<div class="setup-banner hidden" id="setup-banner">
-  ⚠ ยังไม่ตั้งค่า API_URL — แก้ค่า <code>API_URL</code> ที่ด้านบนของ &lt;script&gt; ในไฟล์นี้ ให้เป็น URL ของ Apps Script Web App (…/exec)
-</div>
+<div class="app-container">
+  <div>
+    <header>
+      <h1>Sports Check-in</h1>
+      <p class="subtitle" id="global-date">ระบบบันทึกเข้าร่วมกิจกรรมการกีฬา</p>
+    </header>
 
-<!-- ═══════════════════════════════════
-     LANDING
-═══════════════════════════════════ -->
-<div class="page active" id="pg-landing" style="align-items:center;justify-content:center;padding:2rem">
-  <div style="text-align:center;max-width:460px;width:100%">
-    <div class="landing-logo">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9" stroke="#2997ff" stroke-width="1.5" opacity=".4"/>
-        <path d="M8 12l3 3 5-5" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <div id="pg-boot" class="page active text-center" style="padding-top:40px">
+      <div class="spinner" style="margin:0 auto 16px;width:32px;height:32px;border-width:3px"></div>
+      <p class="text-sec">กำลังจัดเตรียมระบบรักษาความปลอดภัย...</p>
     </div>
-    <h1 class="mb-8">Sports Check-in</h1>
-    <p class="text-sec mt-8" style="font-size:15px">ระบบลงทะเบียนเข้าร่วมกิจกรรม</p>
-    <div style="margin-top:2.5rem;display:flex;flex-direction:column;gap:12px">
-      <button class="btn btn-xl" style="background:linear-gradient(135deg,rgba(41,151,255,.22),rgba(41,151,255,.08));border-color:rgba(41,151,255,.45)" onclick="nav('athlete')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v2h20v-2c0-3.33-6.67-5-10-5z" fill="#2997ff"/></svg>
-        เข้าสู่ระบบนักกีฬา
-      </button>
-      <button class="btn btn-xl" style="background:rgba(255,255,255,.07)" onclick="nav('staff-login')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        เข้าสู่ระบบสตาฟ
-      </button>
-    </div>
-  </div>
-</div>
 
-<!-- ═══════════════════════════════════
-     ATHLETE FLOW
-═══════════════════════════════════ -->
-<div class="page" id="pg-athlete" style="padding:1.5rem;max-width:540px;margin:0 auto;width:100%">
-
-  <div class="flex items-center gap-12 mb-24">
-    <button class="btn" onclick="nav('landing')" style="padding:.5rem .8rem;flex-shrink:0">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12l7-7M5 12l7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <div>
-      <h2>ลงทะเบียนเข้าร่วม</h2>
-      <p class="text-sec text-sm mt-8" id="today-label">—</p>
+    <div id="pg-login" class="page">
+      <div class="glass-card text-center mb-16">
+        <h3 class="mb-16">ยินดีต้อนรับ</h3>
+        <p class="text-sec mb-24 text-sm">กรุณาเลือกรูปแบบการทำงานเพื่อเข้าสู่ขั้นตอนถัดไป</p>
+        <button class="btn mb-12" onclick="switchPage('role')">🏃 สำหรับนักกีฬา / ผู้เรียน</button>
+        <button class="btn btn-secondary" onclick="openStaffModal()">🔑 สำหรับเจ้าหน้าที่ / Staff</button>
+      </div>
     </div>
-  </div>
 
-  <!-- Step 1: Select class (tab) -->
-  <div class="glass-card mb-16" id="card-class">
-    <h3 class="mb-12">1 — เลือกห้อง / กลุ่ม</h3>
-    <div id="class-loading" class="flex items-center gap-8 text-sec text-sm">
-      <div class="spinner"></div>
-      <span>กำลังโหลดรายการ...</span>
+    <div id="pg-role" class="page">
+      <div class="glass-card">
+        <div class="flex items-center mb-16 gap-8">
+          <button class="btn btn-secondary" onclick="switchPage('login')" style="width:auto;padding:8px 12px">←</button>
+          <h3 style="margin:0">เลือกฝ่ายงาน/หน้าที่</h3>
+        </div>
+        <p class="text-sec mb-16 text-sm">เลือกฝ่ายหน้าที่ของคุณเพื่อช่วยให้ค้นหารายชื่อได้รวดเร็วยิ่งขึ้น</p>
+        <div id="role-buttons-grid" class="flex flex-col gap-12">
+          </div>
+      </div>
     </div>
-    <div id="class-select-wrap" class="hidden">
-      <div class="form-group" style="margin-bottom:0">
-        <label>ห้อง / กลุ่ม</label>
-        <select id="class-select" onchange="onClassSelected()">
-          <option value="">— เลือกห้อง —</option>
+
+    <div id="pg-scan" class="page">
+      <div class="glass-card">
+        <div class="flex items-center mb-16 gap-8">
+          <button class="btn btn-secondary" onclick="switchPage('role')" style="width:auto;padding:8px 12px">←</button>
+          <h3 id="scan-title-role" style="margin:0">ยืนยันตัวตน</h3>
+        </div>
+
+        <div class="tabs mb-16">
+          <button class="tab active" id="btn-mth-scan" onclick="switchMethod('scan')">📷 สแกนคิวอาร์</button>
+          <button class="tab" id="btn-mth-manual" onclick="switchMethod('manual')">⌨️ กรอกรหัสประจำวัน</button>
+        </div>
+
+        <div id="method-scan">
+          <div class="scanner-container">
+            <video id="webcam-preview" playsinline></video>
+            <div class="scan-laser"></div>
+          </div>
+          <div id="scan-err-box" class="alert alert-error hidden mb-12"></div>
+          <p class="text-center text-sec text-sm">หันหน้ากล้องไปยังรหัส QR Code หน้าห้องหรือที่สตาฟแจ้ง</p>
+        </div>
+
+        <div id="method-manual" class="hidden">
+          <p class="text-sec text-sm mb-12">กรอกรหัส Passcode ประจำวัน 6 หลัก ที่ได้รับจากผู้ควบคุม:</p>
+          <input type="text" id="ipt-manual-passcode" placeholder="เช่น 847291" maxlength="6" style="text-align:center;font-size:24px;letter-spacing:4px;font-weight:700">
+          <button class="btn" onclick="submitManualPasscode()">ยืนยันรหัสเข้าสู่หน้าเลือกชื่อ</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="pg-member" class="page">
+      <div class="glass-card">
+        <div class="flex items-center mb-16 gap-8">
+          <button class="btn btn-secondary" onclick="cancelToScan()" style="width:auto;padding:8px 12px">← ยกเลิก</button>
+          <h3 style="margin:0">เลือกรายชื่อผู้เข้าเรียน</h3>
+        </div>
+
+        <div id="member-alert" class="alert hidden mb-16"></div>
+
+        <p class="text-sec text-sm mb-6">1. เลือกห้องเรียนของคุณ:</p>
+        <select id="sel-member-class" onchange="onClassSelected()">
+          <option value="">-- กรุณาเลือกห้องเรียน --</option>
         </select>
-      </div>
-    </div>
-    <div id="class-error" class="hidden alert alert-error mt-8">
-      โหลดรายการห้องไม่ได้
-      <button class="btn text-sm" onclick="initAthlete()" style="display:block;margin-top:8px;width:100%">ลองใหม่</button>
-    </div>
-  </div>
 
-  <!-- Step 2: Search name -->
-  <div class="glass-card mb-16 hidden" id="card-name">
-    <div class="flex items-center justify-between mb-12">
-      <h3>2 — เลือกชื่อของคุณ</h3>
-      <button class="btn text-sm" onclick="backToClass()" style="padding:.35rem .7rem;font-size:11px">← เปลี่ยนห้อง</button>
-    </div>
-    <div id="name-loading" class="flex items-center gap-8 text-sec text-sm mb-12">
-      <div class="spinner"></div><span>กำลังโหลดรายชื่อ...</span>
-    </div>
-    <div id="name-search-wrap" class="hidden">
-      <label>ค้นหาชื่อ</label>
-      <div class="search-wrap">
-        <input type="text" id="name-search" placeholder="พิมพ์ชื่อหรือรหัส..." autocomplete="off"
-          oninput="filterNames(this.value)" onfocus="filterNames(this.value)">
-        <div class="search-list" id="name-list"></div>
-      </div>
-      <div id="name-selected" class="hidden alert alert-info mt-8" style="margin-bottom:0">
-        <div class="flex items-center gap-8">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span id="name-selected-text"></span>
+        <div id="wrap-name-search" class="hidden">
+          <p class="text-sec text-sm mb-6">2. ค้นหาและคลิกที่ชื่อ-นามสกุลของคุณ:</p>
+          <div class="search-wrap mb-16">
+            <input type="text" id="ipt-name-search" placeholder="พิมพ์คำค้นหา ชื่อ หรือ เลขที่..." oninput="filterNames()" onclick="showNamesDropdown()">
+            <div id="list-name-dropdown" class="search-list">
+              </div>
+          </div>
+        </div>
+
+        <div id="wrap-submit-zone" class="hidden">
+          <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.08)" class="mb-16">
+            <p class="text-sec text-xs uppercase tracking-wider mb-4">ผู้ที่จะทำการลงทะเบียน</p>
+            <p id="lbl-target-identity" style="font-size:18px;font-weight:600;color:var(--accent)"></p>
+          </div>
+          <button class="btn" id="btn-submit-checkin" onclick="executeCheckIn()">🎯 กดบันทึกสถานะ "มาเรียน"</button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Step 3: Enter / scan passcode -->
-  <div class="glass-card mb-16 hidden" id="card-code">
-    <div class="flex items-center justify-between mb-16">
-      <h3>3 — ใส่ Passcode หรือสแกน QR</h3>
-    </div>
-    <div class="form-group">
-      <label>Passcode (6 ตัวอักษร)</label>
-      <input type="text" id="passcode-input" class="passcode-input" maxlength="6"
-        placeholder="A3K9PQ" autocomplete="off" autocorrect="off" spellcheck="false"
-        oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')submitCheckin()">
-    </div>
-    <div class="flex gap-8" style="flex-direction:column">
-      <button class="btn btn-primary btn-xl" id="submit-btn" onclick="submitCheckin()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        ยืนยัน Check-in
-      </button>
-      <button class="btn btn-xl" id="scan-btn" onclick="startScan()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="7" y="7" width="4" height="4" rx="1" stroke="currentColor" stroke-width="2"/><rect x="13" y="7" width="4" height="4" rx="1" stroke="currentColor" stroke-width="2"/><rect x="7" y="13" width="4" height="4" rx="1" stroke="currentColor" stroke-width="2"/><path d="M13 13h4v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        สแกน QR Code
-      </button>
-    </div>
-    <div id="submit-msg" class="hidden mt-12"></div>
-  </div>
-
-  <!-- QR scanner inline -->
-  <div class="glass-card mb-16 hidden" id="card-scan">
-    <div class="flex items-center justify-between mb-16">
-      <h3>สแกน QR Code</h3>
-      <button class="btn text-sm" onclick="stopScan()" style="padding:.4rem .8rem">ยกเลิก</button>
-    </div>
-    <div id="qr-video-container">
-      <video id="qr-video" playsinline autoplay muted></video>
-      <canvas id="qr-canvas" style="display:none"></canvas>
-      <div class="scan-overlay">
-        <div class="scan-corner scan-corner-tl"></div>
-        <div class="scan-corner scan-corner-tr"></div>
-        <div class="scan-corner scan-corner-bl"></div>
-        <div class="scan-corner scan-corner-br"></div>
-        <div class="scan-line"></div>
-      </div>
-    </div>
-    <p class="text-center text-sec text-sm mt-12">จ่อกล้องไปที่ QR Code ที่สตาฟแสดง</p>
-    <div id="scan-status" class="mt-12"></div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════
-     ATHLETE RESULT
-═══════════════════════════════════ -->
-<div class="page" id="pg-athlete-result">
-  <div class="result-screen" id="result-content"></div>
-</div>
-
-<!-- ═══════════════════════════════════
-     STAFF LOGIN
-═══════════════════════════════════ -->
-<div class="page" id="pg-staff-login" style="align-items:center;justify-content:center;padding:2rem">
-  <div style="max-width:380px;width:100%">
-    <div class="pass-icon">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#2997ff" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#2997ff" stroke-width="2" stroke-linecap="round"/></svg>
-    </div>
-    <div class="text-center mb-24">
-      <h2>เข้าสู่ระบบสตาฟ</h2>
-      <p class="text-sec text-sm mt-8">ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
-    </div>
-    <div class="glass-card">
-      <div class="form-group">
-        <label>รหัสผ่าน</label>
-        <input type="password" id="pw-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <div id="login-err" class="hidden mb-8"></div>
-      <button class="btn btn-primary w-full" id="login-btn" onclick="doLogin()">
-        <span id="login-label">เข้าสู่ระบบ</span>
-      </button>
-    </div>
-    <div class="text-center mt-16">
-      <button class="btn text-sm" onclick="nav('landing')">← กลับหน้าหลัก</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════
-     STAFF DASHBOARD
-═══════════════════════════════════ -->
-<div class="page" id="pg-staff" style="padding:1.5rem;max-width:960px;margin:0 auto;width:100%">
-
-  <div class="flex items-center justify-between mb-24 gap-12">
-    <div>
-      <h2>Staff Dashboard</h2>
-      <p class="text-sec text-sm mt-8" id="dash-date-label">—</p>
-    </div>
-    <button class="btn" onclick="doLogout()" style="padding:.5rem .9rem;flex-shrink:0">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      ออก
-    </button>
-  </div>
-
-  <div class="tabs mb-24">
-    <button class="tab active" id="tab-btn-qr" onclick="switchTab('qr')">📱 QR & Passcode</button>
-    <button class="tab" id="tab-btn-table" onclick="switchTab('table')">📋 ตารางรหัส</button>
-    <button class="tab" id="tab-btn-summary" onclick="switchTab('summary')">📊 สรุปการเช็คชื่อ</button>
-  </div>
-
-  <!-- TAB: QR display -->
-  <div class="tab-panel active" id="tab-qr">
-    <div class="glass-card mb-16">
-      <div class="flex items-center justify-between mb-12 gap-12" style="flex-wrap:wrap">
-        <h3>เลือกบทบาทเพื่อแสดง QR</h3>
-        <button class="btn" onclick="refreshHashes()" id="refresh-btn" style="flex-shrink:0">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          รีเฟรช Passcode
-        </button>
-      </div>
-      <div id="role-loading" class="flex items-center gap-8 text-sec text-sm">
-        <div class="spinner"></div><span>กำลังโหลด...</span>
-      </div>
-      <div id="role-select-wrap" class="hidden">
-        <div class="form-group" style="margin-bottom:0">
-          <label>บทบาท (Role)</label>
-          <select id="role-select" onchange="renderQR()">
-            <option value="">— เลือก Role —</option>
-          </select>
-        </div>
-      </div>
-      <div id="role-error" class="hidden alert alert-error mt-8">
-        โหลด Role ไม่ได้
-        <button class="btn text-sm" onclick="refreshHashes()" style="display:block;margin-top:8px">ลองใหม่</button>
-      </div>
-    </div>
-
-    <div class="glass-card text-center hidden" id="qr-display-card">
-      <p class="text-sec text-sm mb-12" id="qr-display-role"></p>
-      <div id="qr-canvas-wrap" style="display:inline-block;background:#fff;padding:18px;border-radius:16px;margin-bottom:16px"></div>
-      <p style="font-size:2rem;font-weight:700;letter-spacing:.2em;font-family:'SF Mono','Fira Code',monospace" id="qr-passcode-text"></p>
-      <p class="text-ter text-sm mt-8" id="qr-date-text"></p>
-      <div style="margin-top:1.25rem;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="downloadCurrentQR()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          ดาวน์โหลด QR
-        </button>
-        <button class="btn" onclick="openFullscreen()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M8 3H5a2 2 0 00-2 2v3M21 8V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3M16 21h3a2 2 0 002-2v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          เต็มหน้าจอ
-        </button>
-      </div>
-    </div>
-    <div class="text-center text-ter text-sm hidden mt-16" id="qr-placeholder">
-      เลือก Role เพื่อแสดง QR Code
-    </div>
-  </div>
-
-  <!-- TAB: Full passcode table -->
-  <div class="tab-panel" id="tab-table">
-    <div class="glass-card mb-16">
-      <div class="flex items-center justify-between gap-12" style="flex-wrap:wrap">
-        <h3>ตาราง Passcode ทั้งหมด</h3>
-        <p class="text-sec text-sm" id="table-date-label"></p>
-      </div>
-    </div>
-    <div id="table-loading" class="flex items-center gap-8 text-sec text-sm hidden" style="padding:1rem">
-      <div class="spinner"></div><span>กำลังโหลด...</span>
-    </div>
-    <div id="table-wrap" class="tbl-wrap hidden">
-      <table>
-        <thead><tr><th>#</th><th>Role (บทบาท)</th><th>Passcode</th><th>วันที่</th><th></th></tr></thead>
-        <tbody id="table-body"></tbody>
-      </table>
-    </div>
-    <div id="table-empty" class="text-center text-ter text-sm hidden" style="padding:2rem">
-      ยังไม่มีข้อมูล — รีเฟรช Passcode จากแท็บ QR ก่อน
-    </div>
-  </div>
-
-  <!-- TAB: Attendance summary -->
-  <div class="tab-panel" id="tab-summary">
-    <div class="glass-card mb-16">
-      <div class="flex items-center justify-between gap-12" style="flex-wrap:wrap">
+    <div id="pg-staff" class="page">
+      <div class="flex items-center justify-between mb-24">
         <div>
-          <h3>สรุปการเช็คชื่อ</h3>
-          <p class="summary-note mt-8" id="summary-date-label">—</p>
+          <h2 class="text-accent">Staff Dashboard</h2>
+          <p class="text-sec text-sm">จัดการระบบและตรวจสอบสถิติสรุป</p>
         </div>
-        <button class="btn" id="summary-refresh-btn" onclick="refreshAttendanceSummary()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          รีเฟรชสรุป
-        </button>
+        <button class="btn btn-red" onclick="logoutStaff()" style="width:auto;padding:8px 14px;font-size:14px">ออกจากระบบ</button>
       </div>
-      <div class="summary-controls mt-16">
-        <div class="form-group">
-          <label>แสดงการแบ่งตาม</label>
-          <select id="summary-mode-select" onchange="renderAttendanceSummary()">
-            <option value="class">ห้อง</option>
-            <option value="role">หน้าที่</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>ข้อมูลล่าสุด</label>
-          <div class="glass-card" style="padding:.7rem 1rem;border-radius:var(--r-sm);font-size:13px" id="summary-source-label">—</div>
+
+      <div class="tabs mb-24">
+        <button class="tab active" id="tab-btn-qr" onclick="switchTab('qr')">📱 QR & Passcode</button>
+        <button class="tab" id="tab-btn-table" onclick="switchTab('table')">📋 ตารางรหัส</button>
+        <button class="tab" id="tab-btn-summary" onclick="switchTab('summary')">📊 สรุปการเช็คชื่อ</button>
+      </div>
+
+      <div class="tab-panel active" id="tab-qr">
+        <div class="glass-card mb-16">
+          <p class="text-sec text-sm mb-6">เลือกฝ่ายงานที่ต้องการสร้าง QR Code:</p>
+          <select id="sel-staff-role" onchange="onStaffRoleChange()"></select>
+
+          <div style="background:rgba(0,0,0,0.2);border-radius:14px;padding:20px;text-align:center;border:1px solid var(--glass-border)" class="mb-16">
+            <p class="text-sec text-xs uppercase tracking-wider mb-6">รหัสประจำวันด่วน (Passcode)</p>
+            <h2 id="lbl-staff-passcode" style="font-size:42px;letter-spacing:4px;color:var(--yellow);font-weight:800;line-height:1">------</h2>
+          </div>
+
+          <div id="qrcode-canvas-area" style="background:#fff;padding:20px;border-radius:16px;width:240px;height:240px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.4)">
+            </div>
+          <p class="text-center text-sec text-xs">นักกีฬาสามารถเปิดหน้าระบบสแกนคิวอาร์นี้เพื่อเช็คอินอัตโนมัติได้ทันที</p>
         </div>
       </div>
+
+      <div class="tab-panel" id="tab-table">
+        <div class="glass-card">
+          <h3 class="mb-12">ตารางรหัสผ่านประจำวันทุกฝ่าย</h3>
+          <p class="text-sec text-sm mb-16">รายการแฮชและพาสโค้ดสำหรับนำไปแจกจ่ายให้แก่หัวหน้าคุมกลุ่ม</p>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ฝ่ายงาน / หน้าที่</th>
+                  <th class="text-center">รหัสผ่านวันนี้</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-staff-hashes">
+                </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-summary">
+        <div class="glass-card">
+          <div class="flex items-center justify-between mb-12" style="gap:12px; flex-wrap:wrap;">
+            <h3 style="margin:0">สถิติสรุปผลการเช็คชื่อ</h3>
+            <div class="flex items-center gap-8">
+              <select id="sel-summary-distinction" onchange="renderSummaryData()" style="width:auto; padding:6px 28px 6px 12px; margin-bottom:0; font-size:14px;">
+                <option value="class">แบ่งตามห้อง/กลุ่ม</option>
+                <option value="role">แบ่งตามหน้าที่</option>
+              </select>
+              <button class="btn btn-secondary" onclick="fetchSummaryData()" id="btn-refresh-summary" style="width:auto; padding:8px 12px;">🔄</button>
+            </div>
+          </div>
+          
+          <p class="text-ter text-xs mb-16" id="lbl-summary-ts">อัปเดตล่าสุด: กำลังดึงข้อมูล...</p>
+          <div id="summary-status-alert" class="alert hidden mb-16"></div>
+
+          <div class="mb-24">
+            <h4 class="mb-12 text-sm text-sec">กราฟสัดส่วนเปอร์เซ็นต์ "ไม่มีข้อมูล" (สีแดง) เทียบกับที่มีข้อมูลแล้ว (สีเขียว)</h4>
+            <div id="summary-charts-container" class="flex flex-col gap-12">
+              </div>
+          </div>
+
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th id="th-summary-name">ห้อง / กลุ่ม</th>
+                  <th class="text-center" style="font-weight:600">ทั้งหมด</th>
+                  <th class="text-center" style="color:var(--green)">มา</th>
+                  <th class="text-center" style="color:var(--yellow)">ลา</th>
+                  <th class="text-center" style="color:var(--red)">ขาด</th>
+                  <th class="text-center" style="color:var(--text-sec)">ไม่มี</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-summary-rows">
+                </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <div id="summary-loading" class="flex items-center gap-8 text-sec text-sm" style="padding:1rem">
-      <div class="spinner"></div><span>กำลังโหลดสรุป...</span>
-    </div>
-    <div id="summary-error" class="hidden alert alert-error mb-16"></div>
-    <div id="summary-empty" class="hidden summary-empty glass-card">ยังไม่มีข้อมูลสรุปที่บันทึกไว้</div>
-
-    <div id="summary-content" class="hidden summary-shell">
-      <div class="glass-card">
-        <div class="flex items-center justify-between gap-12 mb-12" style="flex-wrap:wrap">
-          <h3>กราฟเปอร์เซ็นต์ไม่มีข้อมูล</h3>
-          <p class="summary-note" id="summary-chart-note">—</p>
-        </div>
-        <div class="summary-chart" id="summary-chart"></div>
-      </div>
-
-      <div class="glass-card">
-        <div class="flex items-center justify-between gap-12 mb-12" style="flex-wrap:wrap">
-          <h3>รายการสรุปแยกตามกลุ่ม</h3>
-          <p class="summary-note" id="summary-list-note">—</p>
-        </div>
-        <div class="summary-cards" id="summary-list"></div>
+  <div id="modal-staff" class="page" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px">
+    <div class="glass-card" style="width:100%;max-width:360px;margin:0">
+      <h3 class="mb-8">สิทธิ์พนักงาน</h3>
+      <p class="text-sec text-sm mb-16">กรอกรหัสผ่านควบคุมเพื่อเปิดแผงแดชบอร์ดสตาฟ</p>
+      <div id="modal-staff-err" class="alert alert-error hidden mb-12"></div>
+      <input type="password" id="ipt-staff-pass" placeholder="กรอกรหัสพนักงาน...">
+      <div class="flex gap-12">
+        <button class="btn btn-secondary" onclick="closeStaffModal()">ยกเลิก</button>
+        <button class="btn" onclick="submitStaffLogin()">ลงชื่อเข้า</button>
       </div>
     </div>
   </div>
+
+  <footer>
+    <p>&copy; 2026 Sports Check-in System. Powered by Google Apps Script.</p>
+  </footer>
 </div>
 
-<!-- ═══════════════════════════════════
-     QR FULLSCREEN MODAL
-═══════════════════════════════════ -->
-<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeFullscreen()">
-  <div class="modal">
-    <p class="text-sec text-sm mb-12" id="modal-role-label"></p>
-    <div id="modal-qr-wrap" style="display:inline-block;background:#fff;padding:20px;border-radius:16px;margin-bottom:16px"></div>
-    <p style="font-size:2.2rem;font-weight:700;letter-spacing:.2em;font-family:'SF Mono','Fira Code',monospace" id="modal-passcode"></p>
-    <p class="text-ter text-sm mt-8" id="modal-date"></p>
-    <button class="btn mt-16" onclick="closeFullscreen()" style="width:100%">ปิด</button>
-  </div>
-</div>
-
-<!-- ── Duplicate check-in warning overlay ──────────────────────────── -->
-<div class="modal-bg" id="warn-modal-bg">
-  <div class="modal" style="border-color:rgba(255,159,10,.35)">
-    <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
-    <p style="font-weight:700;font-size:1.05rem;margin-bottom:12px;color:#ff9f0a">พบการลงทะเบียนซ้ำ</p>
-    <p class="text-sec" style="font-size:.9rem;line-height:1.6;margin-bottom:20px">
-      ระบบตรวจพบการลงทะเบียนมากกว่า 1 ครั้งในวันนี้<br>
-      หากเกิดจากความผิดพลาด กรุณาแจ้งสตาฟทันที<br><br>
-      <strong style="color:#ff453a">หากไม่ใช่ความผิดพลาด ข้อมูลนี้จะถูกบันทึกไว้</strong>
-    </p>
-    <div style="display:flex;gap:10px">
-      <button class="btn" style="flex:1;background:rgba(255,255,255,.08)" onclick="dismissWarnModal()">ยกเลิก</button>
-      <button class="btn" style="flex:1;background:rgba(255,159,10,.2);color:#ff9f0a;border-color:rgba(255,159,10,.4)" onclick="proceedAfterWarn()">ตกลง</button>
-    </div>
-  </div>
-</div>
-
-<!-- ─────────────────────────────────────────────────────────────────── -->
 <script>
-'use strict';
-
-// ══════════════════════════════════════════════════
-// CONFIG — set this to your Apps Script Web App URL
-// (Deploy → Web app → copy the .../exec URL)
-// ══════════════════════════════════════════════════
-const API_URL = "https://script.google.com/macros/s/AKfycbw1GKsVrnrqRkyp4AQzk_KDjW1m35PHz6lqHmkhlNW-4tiYQqYZ8wPUWX4dN-_LeGQmbA/exec";
-
-// ══════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════
-let allClasses      = [];
-let allAthletes     = [];
-let selectedClass   = null;
-let selectedAthlete = null;
-let scanStream      = null;
-let scanRAF         = null;
-let scanActive      = false;
-let hashData        = [];
-let attendanceSummaryData = null;
-
-// ══════════════════════════════════════════════════
-// API HELPER — GET-only fetch to avoid CORS preflight
-// on the Apps Script /exec endpoint.
-// ══════════════════════════════════════════════════
-async function api(action, params) {
-  if (!API_URL || API_URL.indexOf("REPLACE_WITH") !== -1) {
-    show('setup-banner');
-    const msg = "API_URL ยังไม่ถูกตั้งค่า (ดูแบนเนอร์สีแดงด้านบน)";
-    console.error('[api] ' + msg);
-    throw new Error(msg);
-  }
-  const qs = new URLSearchParams(Object.assign({ action }, params || {}));
-  const url = API_URL + (API_URL.includes('?') ? '&' : '?') + qs.toString();
-  console.log('[api] GET', url);
-
-  let res;
-  try {
-    res = await fetch(url, { method: 'GET', redirect: 'follow', cache: 'no-store' });
-  } catch (e) {
-    console.error('[api] Network error:', e);
-    throw new Error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ (network error): ' + e.message);
-  }
-
-  if (!res.ok) {
-    console.error('[api] HTTP error:', res.status, res.statusText);
-    throw new Error('เซิร์ฟเวอร์ตอบกลับผิดพลาด: HTTP ' + res.status);
-  }
-
-  let json;
-  try {
-    json = await res.json();
-  } catch (e) {
-    console.error('[api] Bad JSON response:', e);
-    throw new Error('เซิร์ฟเวอร์ตอบกลับไม่ใช่ JSON ที่ถูกต้อง');
-  }
-
-  console.log('[api] response', json);
-  if (!json || typeof json !== 'object') {
-    throw new Error('เซิร์ฟเวอร์ตอบกลับรูปแบบไม่ถูกต้อง');
-  }
-  if (json.success === false && json.message) {
-    // Caller decides whether this is fatal — return as-is so business
-    // logic (e.g. wrong passcode) can be shown without throwing.
-  }
-  return json;
-}
-
-// ══════════════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════════════
-function nav(page) {
-  switchPage('pg-' + page);
-  if (page === 'athlete') initAthlete();
-}
-function switchPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ══════════════════════════════════════════════════
-// ATHLETE: INIT
-// ══════════════════════════════════════════════════
-function initAthlete() {
-  document.getElementById('today-label').textContent = 'วันที่ ' + today();
-  selectedClass = null;
-  selectedAthlete = null;
-  hide('card-name'); hide('card-code'); hide('card-scan');
-  hide('class-select-wrap'); hide('class-error');
-  show('class-loading');
-
-  api('getAvailableClasses')
-    .then(json => {
-      hide('class-loading');
-      if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
-        console.error('[initAthlete] Bad payload:', json);
-        show('class-error');
-        return;
-      }
-      allClasses = json.data;
-      const sel = document.getElementById('class-select');
-      sel.innerHTML = '<option value="">— เลือกห้อง —</option>';
-      allClasses.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c; opt.textContent = c;
-        sel.appendChild(opt);
-      });
-      show('class-select-wrap');
-    })
-    .catch(err => {
-      console.error('[initAthlete] error:', err);
-      hide('class-loading');
-      show('class-error');
-    });
-}
-
-// ══════════════════════════════════════════════════
-// ATHLETE: CLASS / NAMES
-// ══════════════════════════════════════════════════
-function onClassSelected() {
-  const val = document.getElementById('class-select').value;
-  if (!val) { hide('card-name'); hide('card-code'); return; }
-  selectedClass = val;
-  selectedAthlete = null;
-  document.getElementById('name-search').value = '';
-  document.getElementById('name-selected').classList.add('hidden');
-  hide('card-code');
-  show('card-name');
-  show('name-loading');
-  hide('name-search-wrap');
-
-  api('getNamesForClass', { tabName: val })
-    .then(json => {
-      hide('name-loading');
-      if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
-        console.error('[onClassSelected] Bad payload:', json);
-        setEl('name-loading', '<div class="alert alert-error">โหลดรายชื่อไม่ได้ — ตรวจสอบชื่อแท็บในชีต</div>');
-        show('name-loading');
-        return;
-      }
-      allAthletes = json.data;
-      show('name-search-wrap');
-      filterNames('');
-    })
-    .catch(err => {
-      console.error('[onClassSelected] error:', err);
-      hide('name-loading');
-      setEl('name-loading', '<div class="alert alert-error">' + htmlEsc(err.message) + '</div>');
-      show('name-loading');
-    });
-}
-
-function backToClass() {
-  selectedClass = null;
-  selectedAthlete = null;
-  hide('card-name'); hide('card-code');
-  document.getElementById('class-select').value = '';
-}
-
-function filterNames(q) {
-  const list = document.getElementById('name-list');
-  const filtered = q.trim()
-    ? allAthletes.filter(a =>
-        String(a.name).toLowerCase().includes(q.toLowerCase()) ||
-        String(a.index).includes(q) ||
-        String(a.identity).includes(q))
-    : allAthletes;
-
-  if (filtered.length === 0) {
-    list.innerHTML = '<div class="search-item text-ter">ไม่พบชื่อ</div>';
-  } else {
-    list.innerHTML = filtered.slice(0, 60).map((a, i) =>
-      `<div class="search-item" data-idx="${i}">
-        <strong>${htmlEsc(a.name)}</strong>
-        <span class="text-ter" style="font-size:11px;margin-left:6px">#${htmlEsc(a.index)} · ${htmlEsc(a.role)}</span>
-      </div>`
-    ).join('');
-    // attach handlers without inline JSON (avoids quoting issues with Thai text)
-    Array.from(list.querySelectorAll('.search-item')).forEach((el, i) => {
-      if (filtered[i]) el.addEventListener('click', () => selectAthlete(filtered[i]));
-    });
-  }
-  list.classList.add('show');
-}
-
-function selectAthlete(a) {
-  console.log('[selectAthlete]', a);
-  selectedAthlete = a;
-  document.getElementById('name-list').classList.remove('show');
-  document.getElementById('name-search').value = a.name;
-  setEl('name-selected-text', '#' + htmlEsc(a.index) + ' — ' + htmlEsc(a.name) + '  ·  ' + htmlEsc(a.role));
-  show('name-selected');
-  document.getElementById('passcode-input').value = '';
-  hide('submit-msg');
-  show('card-code');
-  document.getElementById('passcode-input').focus();
-}
-
-// ══════════════════════════════════════════════════
-// ══════════════════════════════════════════════════
-// CHECKIN TOKEN  (localStorage, keyed by dd/mm)
-// One free check-in per day. Subsequent attempts
-// show a warning overlay before allowing proceed.
-// ══════════════════════════════════════════════════
-const TOKEN_PREFIX = 'checkin_token_';
-
-function tokenKey() { return TOKEN_PREFIX + today(); }
-
-function hasUsedToken() {
-  try { return !!localStorage.getItem(tokenKey()); } catch(e) { return false; }
-}
-
-function consumeToken() {
-  try { localStorage.setItem(tokenKey(), '1'); } catch(e) {}
-}
-
-// Pending submit args while warning modal is shown
-let _pendingSubmit = null;
-
-function dismissWarnModal() {
-  document.getElementById('warn-modal-bg').classList.remove('show');
-  _pendingSubmit = null;
-}
-
-function proceedAfterWarn() {
-  document.getElementById('warn-modal-bg').classList.remove('show');
-  if (_pendingSubmit) {
-    const args = _pendingSubmit;
-    _pendingSubmit = null;
-    _doCheckIn(args.code, args.ddmm);
-  }
-}
-
-// ══════════════════════════════════════════════════
-// ATHLETE: CHECKIN SUBMIT
-// ══════════════════════════════════════════════════
-function submitCheckin(passcodeOverride) {
-  const code = (passcodeOverride || document.getElementById('passcode-input').value).trim().toUpperCase();
-  if (!selectedClass || !selectedAthlete) {
-    flashMsg('submit-msg', 'error', 'เลือกห้องและชื่อก่อน');
-    console.warn('[submitCheckin] Incomplete selection. class:', selectedClass, 'athlete:', selectedAthlete);
-    return;
-  }
-  if (code.length !== 6) {
-    flashMsg('submit-msg', 'error', 'Passcode ต้องมี 6 ตัว');
-    return;
-  }
-  const ddmm = today();
-
-  if (hasUsedToken()) {
-    console.warn('[submitCheckin] Token exhausted for', ddmm, '— showing warning overlay');
-    _pendingSubmit = { code, ddmm };
-    document.getElementById('warn-modal-bg').classList.add('show');
-    return;
-  }
-
-  _doCheckIn(code, ddmm);
-}
-
-function _doCheckIn(code, ddmm) {
-  console.log('[submitCheckin] tabName=%s row=%s passcode=%s date=%s', selectedClass, selectedAthlete.row, code, ddmm);
-
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> กำลังส่ง...';
-  hide('submit-msg');
-
-  api('checkIn', { tabName: selectedClass, row: selectedAthlete.row, passcode: code, ddmm })
-    .then(res => {
-      resetSubmitBtn();
-      if (!res || typeof res !== 'object') {
-        console.error('[submitCheckin] Unexpected response:', res);
-        showResult(false, 'รับข้อมูลจากเซิร์ฟเวอร์ผิดพลาด', null);
-        return;
-      }
-      if (res.success) consumeToken(); // burn token only on actual success
-      showResult(res.success, res.message, res.detail || null);
-    })
-    .catch(err => {
-      console.error('[submitCheckin] error:', err);
-      resetSubmitBtn();
-      showResult(false, err.message, null);
-    });
-}
-
-function resetSubmitBtn() {
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ยืนยัน Check-in';
-}
-
-// ══════════════════════════════════════════════════
-// ATHLETE: RESULT PAGE
-// ══════════════════════════════════════════════════
-function showResult(success, message, detail) {
-  stopScan();
-  const name = selectedAthlete ? selectedAthlete.name : '—';
-  const detailHtml = detail
-    ? `<p class="text-sec text-sm mt-8">${htmlEsc(detail.role || '')} · ${htmlEsc(detail.date || '')}</p>`
-    : '';
-
-  document.getElementById('result-content').innerHTML = `
-    <div class="result-icon-circle ${success ? 'result-success' : 'result-fail'}">${success ? '✓' : '✕'}</div>
-    <h2 style="font-size:1.6rem;margin-bottom:.5rem">${htmlEsc(name)}</h2>
-    <p style="font-size:1.1rem;font-weight:600;color:${success ? 'var(--green)' : 'var(--red)'};margin-bottom:.5rem">
-      ${success ? 'Check-in สำเร็จ' : 'Check-in ไม่สำเร็จ'}
-    </p>
-    <p class="text-sec" style="max-width:300px;margin:0 auto">${htmlEsc(message)}</p>
-    ${detailHtml}
-    <button class="btn btn-primary mt-24" onclick="resetAthleteFlow()" style="padding:.8rem 2rem;font-size:15px">← ลงทะเบียนใหม่</button>
-  `;
-  switchPage('pg-athlete-result');
-}
-
-function resetAthleteFlow() {
-  stopScan();
-  selectedAthlete = null;
-  document.getElementById('passcode-input').value = '';
-  document.getElementById('name-search').value = '';
-  document.getElementById('name-selected').classList.add('hidden');
-  hide('card-code'); hide('card-scan'); hide('submit-msg');
-  switchPage('pg-athlete');
-}
-
-// ══════════════════════════════════════════════════
-// ATHLETE: QR SCANNER
-// ══════════════════════════════════════════════════
-async function startScan() {
-  if (typeof jsQR === 'undefined') {
-    console.error('[startScan] jsQR library not loaded.');
-    flashMsg('submit-msg', 'error', 'โหลดไลบรารีสแกน QR ไม่สำเร็จ — กรอก Passcode เองด้านบน');
-    return;
-  }
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    console.warn('[startScan] getUserMedia not supported.');
-    flashMsg('submit-msg', 'warn', 'เบราว์เซอร์นี้ไม่รองรับการสแกน QR — กรอก Passcode เองด้านบน');
-    return;
-  }
-  try {
-    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-  } catch (e) {
-    console.error('[startScan] Camera error:', e);
-    flashMsg('submit-msg', 'error', 'ขอสิทธิ์กล้องไม่ได้: ' + e.message);
-    return;
-  }
-  const video  = document.getElementById('qr-video');
-  const canvas = document.getElementById('qr-canvas');
-  const ctx    = canvas.getContext('2d', { willReadFrequently: true });
-  video.srcObject = scanStream;
-  await video.play();
-  show('card-scan'); hide('card-code');
-  scanActive = true;
-  setEl('scan-status', '');
-
-  const tick = () => {
-    if (!scanActive) return;
-    if (video.readyState === video.HAVE_ENOUGH_DATA) {
-      canvas.width  = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      let code = null;
-      try {
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        code = jsQR(imageData.data, imageData.width, imageData.height);
-      } catch (e) {
-        console.error('[startScan] decode error:', e);
-      }
-      if (code && code.data) {
-        const raw = code.data.trim().toUpperCase();
-        console.log('[startScan] QR detected:', raw);
-        stopScan();
-        document.getElementById('passcode-input').value = raw;
-        show('card-code');
-        delay(100).then(() => submitCheckin(raw));
-        return;
-      }
-    }
-    scanRAF = requestAnimationFrame(tick);
-  };
-  scanRAF = requestAnimationFrame(tick);
-}
-
-function stopScan() {
-  scanActive = false;
-  if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = null; }
-  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
-  hide('card-scan'); show('card-code');
-}
-
-// ══════════════════════════════════════════════════
-// STAFF: LOGIN
-// ══════════════════════════════════════════════════
-function doLogin() {
-  const pw = document.getElementById('pw-input').value.trim();
-  if (!pw) { flashEl('login-err', 'error', 'ใส่รหัสผ่านก่อน'); return; }
-
-  const btn = document.getElementById('login-btn');
-  btn.disabled = true;
-  document.getElementById('login-label').textContent = 'กำลังตรวจสอบ...';
-  document.getElementById('login-err').classList.add('hidden');
-
-  api('verifyStaffPassword', { password: pw })
-    .then(res => {
-      btn.disabled = false;
-      document.getElementById('login-label').textContent = 'เข้าสู่ระบบ';
-      if (!res || !res.success) {
-        console.warn('[doLogin] Auth failed:', res && res.message);
-        flashEl('login-err', 'error', (res && res.message) || 'รหัสผ่านไม่ถูกต้อง');
-        return;
-      }
-      document.getElementById('pw-input').value = '';
-      switchPage('pg-staff');
-      initDashboard();
-    })
-    .catch(err => {
-      console.error('[doLogin] error:', err);
-      btn.disabled = false;
-      document.getElementById('login-label').textContent = 'เข้าสู่ระบบ';
-      flashEl('login-err', 'error', err.message);
-    });
-}
-
-function doLogout() {
-  hashData = [];
-  attendanceSummaryData = null;
-  switchPage('pg-landing');
-  document.getElementById('pw-input').value = '';
-}
-
-// ══════════════════════════════════════════════════
-// STAFF: DASHBOARD INIT
-// ══════════════════════════════════════════════════
-function initDashboard() {
-  const ddmm = today();
-  document.getElementById('dash-date-label').textContent = 'วันที่ ' + ddmm;
-  document.getElementById('table-date-label').textContent = 'วันที่ ' + ddmm;
-  switchTab('qr');
-  refreshHashes();
-  refreshAttendanceSummary();
-}
-
-// ══════════════════════════════════════════════════
-// STAFF: HASH / ROLE LOADING
-// ══════════════════════════════════════════════════
-function refreshHashes() {
-  const ddmm = today();
-  console.log('[refreshHashes] for', ddmm);
-
-  show('role-loading'); hide('role-select-wrap'); hide('role-error');
-  hide('qr-display-card'); hide('qr-placeholder');
-  show('table-loading'); hide('table-wrap'); hide('table-empty');
-
-  const btn = document.getElementById('refresh-btn');
-  btn.disabled = true;
-
-  api('getPreHashTable', { ddmm })
-    .then(json => {
-      btn.disabled = false;
-      hide('role-loading'); hide('table-loading');
-      if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
-        console.error('[refreshHashes] Bad payload:', json);
-        show('role-error'); show('table-empty');
-        return;
-      }
-      hashData = json.data;
-
-      const sel = document.getElementById('role-select');
-      sel.innerHTML = '<option value="">— เลือก Role —</option>';
-      hashData.forEach(h => {
-        const opt = document.createElement('option');
-        opt.value = h.role; opt.textContent = h.role;
-        sel.appendChild(opt);
-      });
-      show('role-select-wrap');
-      show('qr-placeholder');
-
-      const tbody = document.getElementById('table-body');
-      tbody.innerHTML = '';
-      hashData.forEach((h, i) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="text-ter text-sm">${i + 1}</td>
-          <td><strong>${htmlEsc(h.role)}</strong></td>
-          <td><code style="font-family:'SF Mono','Fira Code',monospace;font-size:15px;letter-spacing:.15em;color:var(--accent)">${htmlEsc(h.passcode)}</code></td>
-          <td class="text-sec text-sm">${htmlEsc(h.date)}</td>
-          <td></td>`;
-        const td = tr.lastElementChild;
-        const b = document.createElement('button');
-        b.className = 'btn'; b.style.padding = '.3rem .7rem'; b.style.fontSize = '11px';
-        b.textContent = 'QR';
-        b.addEventListener('click', () => showRoleQR(h.role));
-        td.appendChild(b);
-        tbody.appendChild(tr);
-      });
-      show('table-wrap');
-    })
-    .catch(err => {
-      console.error('[refreshHashes] error:', err);
-      btn.disabled = false;
-      hide('role-loading'); hide('table-loading');
-      show('role-error'); show('table-empty');
-    });
-}
-
-
-function refreshAttendanceSummary() {
-  const modeSelect = document.getElementById('summary-mode-select');
-  const mode = modeSelect ? modeSelect.value : 'class';
-  const btn = document.getElementById('summary-refresh-btn');
-
-  show('summary-loading');
-  hide('summary-error');
-  hide('summary-empty');
-  hide('summary-content');
-
-  if (btn) btn.disabled = true;
-
-  api('getAttendanceSummary')
-    .then(json => {
-      if (btn) btn.disabled = false;
-      hide('summary-loading');
-
-      if (!json || !json.success || !json.data) {
-        attendanceSummaryData = null;
-        setEl('summary-error', (json && json.message) ? htmlEsc(json.message) : 'โหลดข้อมูลสรุปไม่ได้');
-        show('summary-error');
-        show('summary-empty');
-        return;
-      }
-
-      attendanceSummaryData = json.data;
-      renderAttendanceSummary(mode);
-    })
-    .catch(err => {
-      if (btn) btn.disabled = false;
-      hide('summary-loading');
-      attendanceSummaryData = null;
-      setEl('summary-error', htmlEsc(err.message || 'โหลดข้อมูลสรุปไม่ได้'));
-      show('summary-error');
-      show('summary-empty');
-    });
-}
-
-function renderAttendanceSummary(forceMode) {
-  const data = attendanceSummaryData;
-  if (!data) {
-    hide('summary-content');
-    show('summary-empty');
-    return;
-  }
-
-  const modeSelect = document.getElementById('summary-mode-select');
-  const mode = forceMode || (modeSelect ? modeSelect.value : 'class');
-  if (modeSelect && modeSelect.value !== mode) modeSelect.value = mode;
-
-  const list = Array.isArray(data[mode]) ? data[mode] : [];
-  const title = mode === 'role' ? 'หน้าที่' : 'ห้อง';
-  const stamp = data.generatedAt ? new Date(data.generatedAt) : null;
-  const stampText = stamp && !isNaN(stamp.getTime())
-    ? stamp.toLocaleString('th-TH')
-    : '—';
-
-  document.getElementById('summary-date-label').textContent = 'วันที่สรุป: ' + (data.targetDate || '—');
-  document.getElementById('summary-source-label').textContent = 'อัปเดตล่าสุด: ' + stampText;
-  document.getElementById('summary-chart-note').textContent = 'แสดงตาม' + title;
-  document.getElementById('summary-list-note').textContent = 'แสดงตาม' + title;
-
-  const chartEl = document.getElementById('summary-chart');
-  const listEl = document.getElementById('summary-list');
-
-  if (list.length === 0) {
-    chartEl.innerHTML = '<div class="summary-empty">ไม่มีข้อมูลในมุมมองนี้</div>';
-    listEl.innerHTML = '';
-    show('summary-content');
-    hide('summary-empty');
-    return;
-  }
-
-  chartEl.innerHTML = list.map(item => {
-    const pct = Math.max(0, Math.min(100, Number(item.noinfoPct) || 0));
-    return `
-      <div class="summary-row">
-        <div>
-          <div class="summary-label">${htmlEsc(item.name)}</div>
-          <div class="summary-meta">${pct.toFixed(1)}% ไม่มีข้อมูล · รวม ${Number(item.total) || 0} คน</div>
-        </div>
-        <div class="summary-track" aria-hidden="true">
-          <div class="summary-fill" style="width:${pct}%"></div>
-        </div>
-        <div class="summary-meta">${pct.toFixed(1)}%</div>
-      </div>
-    `;
-  }).join('');
-
-  listEl.innerHTML = list.map(item => `
-    <div class="summary-card">
-      <h4>${htmlEsc(item.name)}</h4>
-      <div class="summary-stats">
-        <div class="summary-stat"><span>ทั้งหมด</span><strong>${Number(item.total) || 0}</strong></div>
-        <div class="summary-stat"><span>มา</span><strong>${Number(item.present) || 0}</strong></div>
-        <div class="summary-stat"><span>ลา</span><strong>${Number(item.excused) || 0}</strong></div>
-        <div class="summary-stat"><span>ขาด</span><strong>${Number(item.absent) || 0}</strong></div>
-        <div class="summary-stat"><span>ไม่มีข้อมูล</span><strong>${Number(item.noinfo) || 0}</strong></div>
-      </div>
-      <div class="summary-note mt-8">ไม่มีข้อมูล ${Number(item.noinfoPct || 0).toFixed(1)}%</div>
-    </div>
-  `).join('');
-
-  hide('summary-loading');
-  hide('summary-error');
-  hide('summary-empty');
-  show('summary-content');
-}
-
-// ══════════════════════════════════════════════════
-// STAFF: QR RENDERING
-// ══════════════════════════════════════════════════
-function showRoleQR(role) {
-  switchTab('qr');
-  document.getElementById('role-select').value = role;
-  renderQR();
-}
-
-function renderQR() {
-  const role = document.getElementById('role-select').value;
-  if (!role) { hide('qr-display-card'); show('qr-placeholder'); return; }
-
-  const entry = hashData.find(h => h.role === role);
-  if (!entry) {
-    console.error('[renderQR] Role not found in hashData:', role);
-    hide('qr-display-card');
-    return;
-  }
-  console.log('[renderQR]', entry.role, entry.passcode, entry.date);
-
-  document.getElementById('qr-display-role').textContent = entry.role;
-  document.getElementById('qr-passcode-text').textContent = entry.passcode;
-  document.getElementById('qr-date-text').textContent = 'วันที่ ' + entry.date;
-
-  const wrap = document.getElementById('qr-canvas-wrap');
-  wrap.innerHTML = '';
-  try {
-    new QRCode(wrap, { text: entry.passcode, width: 220, height: 220, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
-  } catch (e) {
-    console.error('[renderQR] QRCode error:', e);
-    wrap.innerHTML = '<p class="text-ter text-sm">สร้าง QR ไม่ได้</p>';
-  }
-  hide('qr-placeholder');
-  show('qr-display-card');
-}
-
-// ══════════════════════════════════════════════════
-// STAFF: FULLSCREEN MODAL
-// ══════════════════════════════════════════════════
-function openFullscreen() {
-  const role = document.getElementById('role-select').value;
-  const entry = hashData.find(h => h.role === role);
-  if (!entry) return;
-
-  document.getElementById('modal-role-label').textContent = entry.role;
-  document.getElementById('modal-passcode').textContent = entry.passcode;
-  document.getElementById('modal-date').textContent = 'วันที่ ' + entry.date;
-
-  const wrap = document.getElementById('modal-qr-wrap');
-  wrap.innerHTML = '';
-  try {
-    new QRCode(wrap, { text: entry.passcode, width: 260, height: 260, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
-  } catch (e) {
-    console.error('[openFullscreen] QRCode error:', e);
-  }
-  document.getElementById('modal-bg').classList.add('show');
-}
-
-function closeFullscreen() {
-  document.getElementById('modal-bg').classList.remove('show');
-}
-
-// ══════════════════════════════════════════════════
-// STAFF: DOWNLOAD QR
-// ══════════════════════════════════════════════════
-async function downloadCurrentQR() {
-  const role = document.getElementById('role-select').value;
-  const entry = hashData.find(h => h.role === role);
-  if (!entry) { console.warn('[downloadCurrentQR] No entry selected'); return; }
-
-  const tempDiv = document.createElement('div');
-  tempDiv.style.position = 'fixed';
-  tempDiv.style.left = '-9999px';
-  document.body.appendChild(tempDiv);
-
-  try {
-    new QRCode(tempDiv, { text: entry.passcode, width: 256, height: 256, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
-  } catch (e) {
-    console.error('[downloadCurrentQR] QRCode render error:', e);
-    document.body.removeChild(tempDiv);
-    return;
-  }
-
-  await delay(120);
-
-  const src = tempDiv.querySelector('img') || tempDiv.querySelector('canvas');
-  if (!src) { console.error('[downloadCurrentQR] No QR element rendered'); document.body.removeChild(tempDiv); return; }
-
-  const canvas = document.createElement('canvas');
-  canvas.width = 256; canvas.height = 296;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, 256, 296);
-
-  if (src.tagName === 'CANVAS') {
-    ctx.drawImage(src, 0, 0, 256, 256);
-  } else {
-    const img = new Image();
-    img.src = src.src;
-    await new Promise(r => { img.onload = r; });
-    ctx.drawImage(img, 0, 0, 256, 256);
-  }
-
-  ctx.fillStyle = '#000';
-  ctx.font = 'bold 14px -apple-system,sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(entry.role + '  ' + entry.passcode, 128, 282);
-
-  document.body.removeChild(tempDiv);
-
-  const a = document.createElement('a');
-  a.download = 'QR_' + entry.role + '_' + entry.date.replace(/\//g, '-') + '.png';
-  a.href = canvas.toDataURL('image/png');
-  a.click();
-  console.log('[downloadCurrentQR] Downloaded:', a.download);
-}
-
-// ══════════════════════════════════════════════════
-// STAFF: TAB SWITCHING
-// ══════════════════════════════════════════════════
-function switchTab(name) {
-  ['qr', 'table', 'summary'].forEach(t => {
-    const panel = document.getElementById('tab-' + t);
-    const btn = document.getElementById('tab-btn-' + t);
-    if (panel) panel.classList.toggle('active', t === name);
-    if (btn) btn.classList.toggle('active', t === name);
-  });
-
-  if (name === 'summary') {
-    if (attendanceSummaryData) {
-      renderAttendanceSummary();
-    } else {
-      refreshAttendanceSummary();
-    }
-  }
-}
-
-// ══════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════
+// ==================================================================
+// GLOBAL SYSTEM VARIABLES
+// ==================================================================
+let currentView = 'boot';
+let staffAuthenticated = false;
+let activeScanner = null;
+let currentRoleFilter = '';
+let globalClassData = [];
+let cachedPreHashes = [];
+let validatedPasscode = '';
+let selectedTargetAthlete = null;
+let summaryCacheData = null; // เก็บแคชสรุปเพื่อไม่ให้ fetch บ่อยกรณีสลับ Distinction
+
+// Helper shortcuts
 function today() {
   const now = new Date();
   return String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0');
 }
-function show(id) { document.getElementById(id).classList.remove('hidden'); }
-function hide(id) { document.getElementById(id).classList.add('hidden'); }
-function setEl(id, html) { document.getElementById(id).innerHTML = html; }
+function show(id) { const el = document.getElementById(id); if(el) el.classList.remove('hidden'); }
+function hide(id) { const el = document.getElementById(id); if(el) el.classList.add('hidden'); }
+function setEl(id, html) { const el = document.getElementById(id); if(el) el.innerHTML = html; }
 function htmlEsc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');
 }
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 function flashMsg(id, type, text) {
   const el = document.getElementById(id);
+  if(!el) return;
   el.innerHTML = `<div class="alert alert-${type}">${htmlEsc(text)}</div>`;
   el.classList.remove('hidden');
 }
@@ -1295,17 +330,496 @@ function flashEl(id, type, text) { flashMsg(id, type, text); }
 
 // Close name dropdown on outside click + close modal on Escape
 document.addEventListener('click', e => {
-  if (!e.target.closest('.search-wrap'))
-    document.querySelectorAll('.search-list').forEach(l => l.classList.remove('show'));
+  if (!e.target.closest('.search-wrap')) {
+    const list = document.getElementById('list-name-dropdown');
+    if(list) list.classList.remove('show');
+  }
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscreen(); });
+document.addEventListener('keydown', e => { 
+  if (e.key === 'Escape') {
+    closeStaffModal();
+  } 
+});
+
+// ==================================================================
+// API INTERACTION CORE
+// ==================================================================
+function api(method, ...args) {
+  return new Promise((resolve, reject) => {
+    if (typeof google === 'undefined' || !google.script || !google.script.run) {
+      // Local development mock fallback
+      console.warn(`Local Environment: ${method} called mock.`);
+      setTimeout(() => {
+        if(method==='getRoles') resolve(["ฝ่ายผู้ตัดสิน","ฝ่ายทะเบียน","ฝ่ายพยาบาล","ฝ่ายเทคโนโลยี"]);
+        else if(method==='verifyStaffPassword') resolve({success:true, hashes:[{role:"ฝ่ายผู้ตัดสิน",passcode:"123456",hash:"mock"}]});
+        else resolve({success:true, data:[]});
+      }, 500);
+      return;
+    }
+    google.script.run
+      .withSuccessHandler(resolve)
+      .withFailureHandler(reject)
+      [method](...args);
+  });
+}
+
+// ==================================================================
+// BOOTSTRAP INITIALIZATION
+// ==================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('global-date').textContent = "ประจำวันที่ " + today() + " | เช็คอินกิจกรรม";
+  
+  // โหลดรายชื่อบทบาท/หน้าที่เพื่อนำมาสร้างเป็นปุ่มทางเลือกให้กับผู้เข้าใช้งาน
+  api('getRoles')
+    .then(roles => {
+      const grid = document.getElementById('role-buttons-grid');
+      grid.innerHTML = '';
+      roles.forEach(role => {
+        const b = document.createElement('button');
+        b.className = 'btn btn-secondary';
+        b.style.justifyContent = 'flex-start';
+        b.innerHTML = `🌟 <span>${htmlEsc(role)}</span>`;
+        b.onclick = () => chooseRole(role);
+        grid.appendChild(b);
+      });
+      switchPage('login');
+    })
+    .catch(err => {
+      alert("ไม่สามารถเปิดระบบเชื่อมต่อฐานข้อมูลได้: " + err.message);
+    });
+});
+
+// ==================================================================
+// ROUTING / VIEW NAVIGATION
+// ==================================================================
+function switchPage(pageId) {
+  currentView = pageId;
+  document.querySelectorAll('.page').forEach(p => {
+    if(p.id !== 'modal-staff') p.classList.remove('active');
+  });
+  
+  const targetPage = document.getElementById('pg-' + pageId);
+  if(targetPage) targetPage.classList.add('active');
+  
+  // ปิดการใช้กล้องทุกครั้งเมื่อออกจากหน้าสแกน
+  if (pageId !== 'scan') {
+    stopCamera();
+  }
+}
+
+function switchTab(tabName) {
+  ['qr', 'table', 'summary'].forEach(t => {
+    const pnl = document.getElementById('tab-' + t);
+    const btn = document.getElementById('tab-btn-' + t);
+    if(pnl) pnl.classList.toggle('active', t === tabName);
+    if(btn) btn.classList.toggle('active', t === tabName);
+  });
+
+  // เมื่อไรก็ตามที่เปลี่ยนมาเลือกแท็บสรุปผล ให้ทำการโหลดค่าทันทีเพื่อความสดใหม่
+  if (tabName === 'summary') {
+    fetchSummaryData();
+  }
+}
+
+function switchMethod(methodName) {
+  document.getElementById('btn-mth-scan').classList.toggle('active', methodName === 'scan');
+  document.getElementById('btn-mth-manual').classList.toggle('active', methodName === 'manual');
+  
+  const mScan = document.getElementById('method-scan');
+  const mManual = document.getElementById('method-manual');
+  
+  if (methodName === 'scan') {
+    mScan.classList.remove('hidden');
+    mManual.classList.add('hidden');
+    openScanner();
+  } else {
+    mScan.classList.add('hidden');
+    mManual.classList.remove('hidden');
+    stopCamera();
+  }
+}
+
+// ==================================================================
+// ATHLETE / USER WORKFLOW
+// ==================================================================
+function chooseRole(roleName) {
+  currentRoleFilter = roleName;
+  document.getElementById('scan-title-role').textContent = roleName;
+  switchPage('scan');
+  switchMethod('scan'); // Default เปิดมาใช้การสแกนกล้องก่อน
+}
+
+function cancelToScan() {
+  validatedPasscode = '';
+  selectedTargetAthlete = null;
+  hide('wrap-name-search');
+  hide('wrap-submit-zone');
+  document.getElementById('sel-member-class').value = '';
+  document.getElementById('ipt-name-search').value = '';
+  switchPage('scan');
+  switchMethod('scan');
+}
+
+// ── CAMERA & QR CODE PARSING LOGIC ───────────────────────────────
+function openScanner() {
+  hide('scan-err-box');
+  const video = document.getElementById('webcam-preview');
+  
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    flashEl('scan-err-box', 'error', 'เบราว์เซอร์หรืออุปกรณ์ของคุณไม่รองรับการใช้งานกล้องถ่ายรูป');
+    return;
+  }
+  
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(stream => {
+      activeScanner = stream;
+      video.srcObject = stream;
+      video.setAttribute("playsinline", true);
+      video.play();
+      requestAnimationFrame(tickScanner);
+    })
+    .catch(err => {
+      flashEl('scan-err-box', 'error', 'ไม่สามารถเข้าถึงกล้องถ่ายภาพได้ กรุณาตรวจสอบสิทธิ์การอนุญาตอุปกรณ์');
+    });
+}
+
+function stopCamera() {
+  if (activeScanner) {
+    activeScanner.getTracks().forEach(track => track.stop());
+    activeScanner = null;
+  }
+  const video = document.getElementById('webcam-preview');
+  if(video) video.srcObject = null;
+}
+
+function tickScanner() {
+  const video = document.getElementById('webcam-preview');
+  if (!activeScanner || video.readyState !== video.HAVE_ENOUGH_DATA) {
+    if (currentView === 'scan') requestAnimationFrame(tickScanner);
+    return;
+  }
+  
+  // นำรูปภาพจาก Video Frame มาสร้าง Canvas ชั่วคราวเพื่อประมวลผลหารหัสภาพ
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "dontInvert" });
+  
+  if (code && code.data) {
+    // ตรวจจับเจอข้อมูลคิวอาร์โค้ดสำเร็จ
+    processValidCodeString(code.data);
+  } else {
+    if (currentView === 'scan') requestAnimationFrame(tickScanner);
+  }
+}
+
+function submitManualPasscode() {
+  const code = document.getElementById('ipt-manual-passcode').value.trim();
+  if (code.length !== 6) {
+    alert("กรุณากรอกรหัสผ่านประจำวันให้ครบถ้วน 6 หลัก");
+    return;
+  }
+  processValidCodeString(code);
+}
+
+function processValidCodeString(scannedValue) {
+  stopCamera();
+  hide('member-alert');
+  
+  // เรียกฝั่ง Backend ตรวจสอบความถูกต้องของสิทธิ์และแฮชรหัสพาสโค้ด
+  api('verifyPasscodeForRole', currentRoleFilter, scannedValue)
+    .then(res => {
+      if (!res.success) {
+        alert("รหัสผ่านไม่ถูกต้อง หรือหมดอายุแล้ว: " + res.message);
+        switchPage('scan');
+        openScanner();
+        return;
+      }
+      
+      // บันทึก Token ผ่านเข้าใช้
+      validatedPasscode = scannedValue;
+      
+      // โหลดแผ่นงานรายชื่อกลุ่มห้องทั้งหมดที่มีในระบบ
+      api('getTabNames')
+        .then(tabs => {
+          const select = document.getElementById('sel-member-class');
+          select.innerHTML = '<option value="">-- กรุณาเลือกห้องเรียน --</option>';
+          tabs.forEach(t => {
+            select.innerHTML += `<option value="${htmlEsc(t)}">${htmlEsc(t)}</option>`;
+          });
+          
+          switchPage('member');
+        });
+    })
+    .catch(err => {
+      alert("ข้อผิดพลาดฝั่งเซิร์ฟเวอร์: " + err.message);
+      switchPage('scan');
+    });
+}
+
+// ── REGISTRATION MEMBER CONTROL ──────────────────────────────────
+function onClassSelected() {
+  const selectedClass = document.getElementById('sel-member-class').value;
+  hide('wrap-name-search');
+  hide('wrap-submit-zone');
+  document.getElementById('ipt-name-search').value = '';
+  selectedTargetAthlete = null;
+  
+  if (!selectedClass) return;
+  
+  flashEl('member-alert', 'warn', 'กำลังอ่านข้อมูลรายชื่อสมาชิกภายในห้อง...');
+  
+  api('getClassData', selectedClass)
+    .then(data => {
+      hide('member-alert');
+      globalClassData = data;
+      show('wrap-name-search');
+      showNamesDropdown();
+    })
+    .catch(err => {
+      flashEl('member-alert', 'error', 'ไม่สามารถเปิดดึงรายชื่อได้: ' + err.message);
+    });
+}
+
+function showNamesDropdown() {
+  if (globalClassData.length === 0) return;
+  filterNames();
+  document.getElementById('list-name-dropdown').classList.add('show');
+}
+
+function filterNames() {
+  const query = document.getElementById('ipt-name-search').value.toLowerCase().trim();
+  const dropdown = document.getElementById('list-name-dropdown');
+  dropdown.innerHTML = '';
+  
+  globalClassData.forEach(p => {
+    const combinedStr = (p.num + " " + p.name).toLowerCase();
+    if (!query || combinedStr.includes(query)) {
+      const item = document.createElement('div');
+      item.className = 'search-item';
+      item.innerHTML = `<strong>เลขที่ ${p.num}</strong> - ${htmlEsc(p.name)}`;
+      item.onclick = () => selectAthleteItem(p);
+      dropdown.appendChild(item);
+    }
+  });
+}
+
+function selectAthleteItem(athleteObj) {
+  selectedTargetAthlete = athleteObj;
+  document.getElementById('ipt-name-search').value = `เลขที่ ${athleteObj.num} - ${athleteObj.name}`;
+  document.getElementById('list-name-dropdown').classList.remove('show');
+  
+  document.getElementById('lbl-target-identity').textContent = `เลขที่ ${athleteObj.num} : ${athleteObj.name}`;
+  show('wrap-submit-zone');
+}
+
+function executeCheckIn() {
+  const selectedClass = document.getElementById('sel-member-class').value;
+  if (!selectedClass || !selectedTargetAthlete || !validatedPasscode) {
+    alert("ข้อมูลยืนยันตัวตนสูญหาย กรุณาทำรายการใหม่อีกครั้ง");
+    return;
+  }
+  
+  const btn = document.getElementById('btn-submit-checkin');
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังบันทึกข้อมูลลงฐานระบบ...';
+  
+  api('checkIn', selectedClass, selectedTargetAthlete.row, validatedPasscode, currentRoleFilter)
+    .then(res => {
+      btn.disabled = false;
+      btn.textContent = '🎯 กดบันทึกสถานะ "มาเรียน"';
+      if (res.success) {
+        alert("✨ เช็คชื่อเข้าร่วมกิจกรรมสำเร็จแล้ว! \nระบบได้ลงบันทึกเวลาเป็น 'มา' ให้เรียบร้อย");
+        switchPage('login');
+      } else {
+        alert("ไม่สามารถบันทึกได้: " + res.message);
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.textContent = '🎯 กดบันทึกสถานะ "มาเรียน"';
+      alert("เกิดข้อผิดพลาดรุนแรง: " + err.message);
+    });
+}
+
+// ==================================================================
+// STAFF AREA MANAGEMENT
+// ==================================================================
+function openStaffModal() {
+  document.getElementById('ipt-staff-pass').value = '';
+  hide('modal-staff-err');
+  document.getElementById('modal-staff').style.display = 'flex';
+}
+
+function closeStaffModal() {
+  document.getElementById('modal-staff').style.display = 'none';
+}
+
+function submitStaffLogin() {
+  const pass = document.getElementById('ipt-staff-pass').value;
+  hide('modal-staff-err');
+  
+  api('verifyStaffPassword', pass)
+    .then(res => {
+      if (res.success) {
+        staffAuthenticated = true;
+        cachedPreHashes = res.hashes;
+        closeStaffModal();
+        
+        // ประกอบตัวเลือก Select สำหรับจัดการ QR
+        const sel = document.getElementById('sel-staff-role');
+        sel.innerHTML = '';
+        
+        // ผูกสร้างตารางพาสโค้ดรวมของแท็บถัดไป
+        const tbody = document.getElementById('tbody-staff-hashes');
+        tbody.innerHTML = '';
+        
+        res.hashes.forEach(h => {
+          sel.innerHTML += `<option value="${htmlEsc(h.role)}">${htmlEsc(h.role)}</option>`;
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${htmlEsc(h.role)}</strong></td>
+              <td class="text-center"><span style="font-family:monospace; font-weight:700; color:var(--yellow); font-size:16px;">${htmlEsc(h.passcode)}</span></td>
+            </tr>
+          `;
+        });
+        
+        switchPage('staff');
+        switchTab('qr');
+        onStaffRoleChange();
+      } else {
+        flashEl('modal-staff-err', 'error', 'รหัสพนักงานไม่ถูกต้อง ปฏิเสธการเข้าถึงแดชบอร์ด');
+      }
+    })
+    .catch(err => {
+      flashEl('modal-staff-err', 'error', 'ข้อผิดพลาดเครือข่าย: ' + err.message);
+    });
+}
+
+function logoutStaff() {
+  staffAuthenticated = false;
+  cachedPreHashes = [];
+  summaryCacheData = null;
+  switchPage('login');
+}
+
+function onStaffRoleChange() {
+  const role = document.getElementById('sel-staff-role').value;
+  const match = cachedPreHashes.find(h => h.role === role);
+  const codeArea = document.getElementById('lbl-staff-passcode');
+  const qrArea = document.getElementById('qrcode-canvas-area');
+  
+  qrArea.innerHTML = '';
+  
+  if (match) {
+    codeArea.textContent = match.passcode;
+    // สร้างภาพ QR Code ลงพื้นที่ตามฟอร์แมตข้อมูลส่งค่าตรงเข้าเช็คชื่อได้ทันที
+    new QRCode(qrArea, {
+      text: match.passcode,
+      width: 200,
+      height: 200,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } else {
+    codeArea.textContent = "------";
+  }
+}
 
 // ══════════════════════════════════════════════════
-// BOOT
+// STAFF: SUMMARIZER CONTROLLER FEATURE
 // ══════════════════════════════════════════════════
-if (!API_URL || API_URL.indexOf("REPLACE_WITH") !== -1) {
-  show('setup-banner');
-  console.error('[boot] API_URL is not configured. Edit the API_URL constant near the top of the <script> tag.');
+function fetchSummaryData() {
+  hide('summary-charts-container');
+  hide('tbody-summary-rows');
+  hide('summary-status-alert');
+  document.getElementById('lbl-summary-ts').textContent = "กำลังเชื่อมต่อคลังข้อมูล...";
+  
+  const refreshBtn = document.getElementById('btn-refresh-summary');
+  refreshBtn.disabled = true;
+  
+  api('getSummaryData')
+    .then(res => {
+      refreshBtn.disabled = false;
+      if (!res.success) {
+        flashEl('summary-status-alert', 'warn', res.msg);
+        document.getElementById('lbl-summary-ts').textContent = "สถานะ: อัปเดตล้มเหลว";
+        return;
+      }
+      
+      // บันทึกลงหน่วยความจำแคชหน้าเว็บเพื่อความนิ่งสูงสุด
+      summaryCacheData = res;
+      document.getElementById('lbl-summary-ts').textContent = "รอบหลังบ้าน (ทุก 5 น.): " + res.timestamp;
+      
+      renderSummaryData();
+      show('summary-charts-container');
+      show('tbody-summary-rows');
+    })
+    .catch(err => {
+      refreshBtn.disabled = false;
+      flashEl('summary-status-alert', 'error', 'ดึงข้อมูลล้มเหลว: ' + err.message);
+      document.getElementById('lbl-summary-ts').textContent = "เกิดข้อผิดพลาดในการโหลด";
+    });
+}
+
+function renderSummaryData() {
+  if (!summaryCacheData) return;
+  
+  const mode = document.getElementById('sel-summary-distinction').value; // 'class' หรือ 'role'
+  const items = mode === 'class' ? summaryCacheData.classes : summaryCacheData.roles;
+  
+  // เปลี่ยนหัวข้อคอลัมน์แรกตามประเภท
+  document.getElementById('th-summary-name').textContent = mode === 'class' ? 'ห้อง / กลุ่ม' : 'ฝ่ายงาน (Roles)';
+  
+  const chartBox = document.getElementById('summary-charts-container');
+  const tbody = document.getElementById('tbody-summary-rows');
+  
+  chartBox.innerHTML = '';
+  tbody.innerHTML = '';
+  
+  if (items.length === 0) {
+    chartBox.innerHTML = '<p class="text-ter text-sm text-center">ไม่มีข้อมูลแจกแจงสำหรับรายการนี้</p>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-sec">ไม่พบข้อมูลแถวสรุป</td></tr>';
+    return;
+  }
+  
+  items.forEach(item => {
+    // คำนวณร้อยละคนไม่มีข้อมูล: (ไม่มีข้อมูล / คนรวมทั้งหมด) * 100
+    const noInfoPct = item.total > 0 ? ((item.noInfo / item.total) * 100).toFixed(1) : (0).toFixed(1);
+    const hasDataPct = (100 - noInfoPct).toFixed(1);
+    
+    // 1. วาดส่วนประกอบกราฟแท่งแนวนอน (แบ่งสัดส่วน มีข้อมูล [มา ลา ขาด] สีเขียว VS ไม่มีข้อมูล สีแดง)
+    const barRow = document.createElement('div');
+    barRow.className = 'summary-bar-row';
+    barRow.innerHTML = `
+      <div class="summary-bar-labels">
+        <span>${htmlEsc(item.name)}</span>
+        <span style="color: ${item.noInfo > 0 ? 'var(--red)' : 'var(--text-sec)'}">ไม่มีข้อมูล: ${noInfoPct}% (${item.noInfo}/${item.total})</span>
+      </div>
+      <div class="summary-bar-bg">
+        <div class="summary-bar-fill-hasdata" style="width: ${hasDataPct}%" title="มีข้อมูลครบถ้วน"></div>
+        <div class="summary-bar-fill-nodata" style="width: ${noInfoPct}%" title="ยังไม่มีข้อมูล"></div>
+      </div>
+    `;
+    chartBox.appendChild(barRow);
+    
+    // 2. วาดส่วนประกอบตารางข้อมูลแสดงจำนวนสมาชิกนับจริงด้านล่างกราฟ
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${htmlEsc(item.name)}</strong></td>
+      <td class="text-center" style="font-weight:600">${item.total}</td>
+      <td class="text-center" style="color:var(--green); font-weight:500">${item.present}</td>
+      <td class="text-center" style="color:var(--yellow)">${item.excused}</td>
+      <td class="text-center" style="color:var(--red)">${item.absent}</td>
+      <td class="text-center" style="color:var(--text-sec); opacity:0.7">${item.noInfo}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 </script>
 </body>
