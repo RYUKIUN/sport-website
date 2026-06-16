@@ -105,6 +105,26 @@ tr:hover td{background:rgba(255,255,255,.03)}
 .result-success{background:rgba(48,209,88,.15);border:2px solid rgba(48,209,88,.4)}
 .result-fail{background:rgba(255,69,58,.15);border:2px solid rgba(255,69,58,.4)}
 
+
+/* ── Attendance summary ────────────────────────────────── */
+.summary-controls{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.summary-controls .form-group{flex:1;min-width:220px;margin-bottom:0}
+.summary-note{font-size:12px;color:var(--text-sec)}
+.summary-shell{display:flex;flex-direction:column;gap:16px}
+.summary-chart{display:flex;flex-direction:column;gap:12px}
+.summary-row{display:grid;grid-template-columns:minmax(130px,1.25fr) minmax(160px,2fr) auto;gap:12px;align-items:center}
+.summary-label{font-weight:700;font-size:14px;line-height:1.2}
+.summary-track{height:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:999px;overflow:hidden}
+.summary-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(41,151,255,.95),rgba(48,209,88,.95));min-width:2px}
+.summary-meta{font-size:12px;color:var(--text-sec);white-space:nowrap}
+.summary-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.summary-card{padding:1rem;border-radius:var(--r-lg);border:1px solid var(--glass-border);background:rgba(255,255,255,.05)}
+.summary-card h4{font-size:1rem;margin-bottom:10px}
+.summary-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.summary-stat{padding:.6rem .45rem;border-radius:14px;background:rgba(255,255,255,.06);text-align:center}
+.summary-stat span{display:block;font-size:10px;color:var(--text-sec);margin-bottom:2px}
+.summary-stat strong{display:block;font-size:18px;line-height:1}
+.summary-empty{padding:2rem;text-align:center;color:var(--text-ter)}
 /* ── Landing hero ───────────────────────────────────────── */
 .landing-logo{width:80px;height:80px;background:linear-gradient(135deg,rgba(41,151,255,.25),rgba(48,209,88,.15));border:1px solid var(--glass-border);border-radius:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 2rem;backdrop-filter:var(--blur-sm)}
 
@@ -341,6 +361,7 @@ h3{font-size:.95rem;font-weight:600}
   <div class="tabs mb-24">
     <button class="tab active" id="tab-btn-qr" onclick="switchTab('qr')">📱 QR & Passcode</button>
     <button class="tab" id="tab-btn-table" onclick="switchTab('table')">📋 ตารางรหัส</button>
+    <button class="tab" id="tab-btn-summary" onclick="switchTab('summary')">📊 สรุปการเช็คชื่อ</button>
   </div>
 
   <!-- TAB: QR display -->
@@ -412,6 +433,59 @@ h3{font-size:.95rem;font-weight:600}
       ยังไม่มีข้อมูล — รีเฟรช Passcode จากแท็บ QR ก่อน
     </div>
   </div>
+
+  <!-- TAB: Attendance summary -->
+  <div class="tab-panel" id="tab-summary">
+    <div class="glass-card mb-16">
+      <div class="flex items-center justify-between gap-12" style="flex-wrap:wrap">
+        <div>
+          <h3>สรุปการเช็คชื่อ</h3>
+          <p class="summary-note mt-8" id="summary-date-label">—</p>
+        </div>
+        <button class="btn" id="summary-refresh-btn" onclick="refreshAttendanceSummary()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          รีเฟรชสรุป
+        </button>
+      </div>
+      <div class="summary-controls mt-16">
+        <div class="form-group">
+          <label>แสดงการแบ่งตาม</label>
+          <select id="summary-mode-select" onchange="renderAttendanceSummary()">
+            <option value="class">ห้อง</option>
+            <option value="role">หน้าที่</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>ข้อมูลล่าสุด</label>
+          <div class="glass-card" style="padding:.7rem 1rem;border-radius:var(--r-sm);font-size:13px" id="summary-source-label">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="summary-loading" class="flex items-center gap-8 text-sec text-sm" style="padding:1rem">
+      <div class="spinner"></div><span>กำลังโหลดสรุป...</span>
+    </div>
+    <div id="summary-error" class="hidden alert alert-error mb-16"></div>
+    <div id="summary-empty" class="hidden summary-empty glass-card">ยังไม่มีข้อมูลสรุปที่บันทึกไว้</div>
+
+    <div id="summary-content" class="hidden summary-shell">
+      <div class="glass-card">
+        <div class="flex items-center justify-between gap-12 mb-12" style="flex-wrap:wrap">
+          <h3>กราฟเปอร์เซ็นต์ไม่มีข้อมูล</h3>
+          <p class="summary-note" id="summary-chart-note">—</p>
+        </div>
+        <div class="summary-chart" id="summary-chart"></div>
+      </div>
+
+      <div class="glass-card">
+        <div class="flex items-center justify-between gap-12 mb-12" style="flex-wrap:wrap">
+          <h3>รายการสรุปแยกตามกลุ่ม</h3>
+          <p class="summary-note" id="summary-list-note">—</p>
+        </div>
+        <div class="summary-cards" id="summary-list"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════
@@ -465,6 +539,7 @@ let scanStream      = null;
 let scanRAF         = null;
 let scanActive      = false;
 let hashData        = [];
+let attendanceSummaryData = null;
 
 // ══════════════════════════════════════════════════
 // API HELPER — GET-only fetch to avoid CORS preflight
@@ -483,7 +558,7 @@ async function api(action, params) {
 
   let res;
   try {
-    res = await fetch(url, { method: 'GET', redirect: 'follow' });
+    res = await fetch(url, { method: 'GET', redirect: 'follow', cache: 'no-store' });
   } catch (e) {
     console.error('[api] Network error:', e);
     throw new Error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ (network error): ' + e.message);
@@ -869,6 +944,7 @@ function doLogin() {
 
 function doLogout() {
   hashData = [];
+  attendanceSummaryData = null;
   switchPage('pg-landing');
   document.getElementById('pw-input').value = '';
 }
@@ -882,6 +958,7 @@ function initDashboard() {
   document.getElementById('table-date-label').textContent = 'วันที่ ' + ddmm;
   switchTab('qr');
   refreshHashes();
+  refreshAttendanceSummary();
 }
 
 // ══════════════════════════════════════════════════
@@ -945,6 +1022,116 @@ function refreshHashes() {
       hide('role-loading'); hide('table-loading');
       show('role-error'); show('table-empty');
     });
+}
+
+
+function refreshAttendanceSummary() {
+  const modeSelect = document.getElementById('summary-mode-select');
+  const mode = modeSelect ? modeSelect.value : 'class';
+  const btn = document.getElementById('summary-refresh-btn');
+
+  show('summary-loading');
+  hide('summary-error');
+  hide('summary-empty');
+  hide('summary-content');
+
+  if (btn) btn.disabled = true;
+
+  api('getAttendanceSummary')
+    .then(json => {
+      if (btn) btn.disabled = false;
+      hide('summary-loading');
+
+      if (!json || !json.success || !json.data) {
+        attendanceSummaryData = null;
+        setEl('summary-error', (json && json.message) ? htmlEsc(json.message) : 'โหลดข้อมูลสรุปไม่ได้');
+        show('summary-error');
+        show('summary-empty');
+        return;
+      }
+
+      attendanceSummaryData = json.data;
+      renderAttendanceSummary(mode);
+    })
+    .catch(err => {
+      if (btn) btn.disabled = false;
+      hide('summary-loading');
+      attendanceSummaryData = null;
+      setEl('summary-error', htmlEsc(err.message || 'โหลดข้อมูลสรุปไม่ได้'));
+      show('summary-error');
+      show('summary-empty');
+    });
+}
+
+function renderAttendanceSummary(forceMode) {
+  const data = attendanceSummaryData;
+  if (!data) {
+    hide('summary-content');
+    show('summary-empty');
+    return;
+  }
+
+  const modeSelect = document.getElementById('summary-mode-select');
+  const mode = forceMode || (modeSelect ? modeSelect.value : 'class');
+  if (modeSelect && modeSelect.value !== mode) modeSelect.value = mode;
+
+  const list = Array.isArray(data[mode]) ? data[mode] : [];
+  const title = mode === 'role' ? 'หน้าที่' : 'ห้อง';
+  const stamp = data.generatedAt ? new Date(data.generatedAt) : null;
+  const stampText = stamp && !isNaN(stamp.getTime())
+    ? stamp.toLocaleString('th-TH')
+    : '—';
+
+  document.getElementById('summary-date-label').textContent = 'วันที่สรุป: ' + (data.targetDate || '—');
+  document.getElementById('summary-source-label').textContent = 'อัปเดตล่าสุด: ' + stampText;
+  document.getElementById('summary-chart-note').textContent = 'แสดงตาม' + title;
+  document.getElementById('summary-list-note').textContent = 'แสดงตาม' + title;
+
+  const chartEl = document.getElementById('summary-chart');
+  const listEl = document.getElementById('summary-list');
+
+  if (list.length === 0) {
+    chartEl.innerHTML = '<div class="summary-empty">ไม่มีข้อมูลในมุมมองนี้</div>';
+    listEl.innerHTML = '';
+    show('summary-content');
+    hide('summary-empty');
+    return;
+  }
+
+  chartEl.innerHTML = list.map(item => {
+    const pct = Math.max(0, Math.min(100, Number(item.noinfoPct) || 0));
+    return `
+      <div class="summary-row">
+        <div>
+          <div class="summary-label">${htmlEsc(item.name)}</div>
+          <div class="summary-meta">${pct.toFixed(1)}% ไม่มีข้อมูล · รวม ${Number(item.total) || 0} คน</div>
+        </div>
+        <div class="summary-track" aria-hidden="true">
+          <div class="summary-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="summary-meta">${pct.toFixed(1)}%</div>
+      </div>
+    `;
+  }).join('');
+
+  listEl.innerHTML = list.map(item => `
+    <div class="summary-card">
+      <h4>${htmlEsc(item.name)}</h4>
+      <div class="summary-stats">
+        <div class="summary-stat"><span>ทั้งหมด</span><strong>${Number(item.total) || 0}</strong></div>
+        <div class="summary-stat"><span>มา</span><strong>${Number(item.present) || 0}</strong></div>
+        <div class="summary-stat"><span>ลา</span><strong>${Number(item.excused) || 0}</strong></div>
+        <div class="summary-stat"><span>ขาด</span><strong>${Number(item.absent) || 0}</strong></div>
+        <div class="summary-stat"><span>ไม่มีข้อมูล</span><strong>${Number(item.noinfo) || 0}</strong></div>
+      </div>
+      <div class="summary-note mt-8">ไม่มีข้อมูล ${Number(item.noinfoPct || 0).toFixed(1)}%</div>
+    </div>
+  `).join('');
+
+  hide('summary-loading');
+  hide('summary-error');
+  hide('summary-empty');
+  show('summary-content');
 }
 
 // ══════════════════════════════════════════════════
@@ -1069,10 +1256,20 @@ async function downloadCurrentQR() {
 // STAFF: TAB SWITCHING
 // ══════════════════════════════════════════════════
 function switchTab(name) {
-  ['qr', 'table'].forEach(t => {
-    document.getElementById('tab-' + t).classList.toggle('active', t === name);
-    document.getElementById('tab-btn-' + t).classList.toggle('active', t === name);
+  ['qr', 'table', 'summary'].forEach(t => {
+    const panel = document.getElementById('tab-' + t);
+    const btn = document.getElementById('tab-btn-' + t);
+    if (panel) panel.classList.toggle('active', t === name);
+    if (btn) btn.classList.toggle('active', t === name);
   });
+
+  if (name === 'summary') {
+    if (attendanceSummaryData) {
+      renderAttendanceSummary();
+    } else {
+      refreshAttendanceSummary();
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════
