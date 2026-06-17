@@ -147,16 +147,10 @@ h3{font-size:.95rem;font-weight:600}
 </head>
 <body>
 
-<!-- ═══════════════════════════════════
-     SETUP BANNER (shown if API_URL not configured)
-═══════════════════════════════════ -->
 <div class="setup-banner hidden" id="setup-banner">
   ⚠ ยังไม่ตั้งค่า API_URL — แก้ค่า <code>API_URL</code> ที่ด้านบนของ &lt;script&gt; ในไฟล์นี้ ให้เป็น URL ของ Apps Script Web App (…/exec)
 </div>
 
-<!-- ═══════════════════════════════════
-     LANDING
-═══════════════════════════════════ -->
 <div class="page active" id="pg-landing" style="align-items:center;justify-content:center;padding:2rem">
   <div style="text-align:center;max-width:460px;width:100%">
     <div class="landing-logo">
@@ -180,9 +174,6 @@ h3{font-size:.95rem;font-weight:600}
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     ATHLETE FLOW
-═══════════════════════════════════ -->
 <div class="page" id="pg-athlete" style="padding:1.5rem;max-width:540px;margin:0 auto;width:100%">
 
   <div class="flex items-center gap-12 mb-24">
@@ -195,7 +186,6 @@ h3{font-size:.95rem;font-weight:600}
     </div>
   </div>
 
-  <!-- Step 1: Select class (tab) -->
   <div class="glass-card mb-16" id="card-class">
     <h3 class="mb-12">1 — เลือกห้อง / กลุ่ม</h3>
     <div id="class-loading" class="flex items-center gap-8 text-sec text-sm">
@@ -216,7 +206,6 @@ h3{font-size:.95rem;font-weight:600}
     </div>
   </div>
 
-  <!-- Step 2: Search name -->
   <div class="glass-card mb-16 hidden" id="card-name">
     <div class="flex items-center justify-between mb-12">
       <h3>2 — เลือกชื่อของคุณ</h3>
@@ -241,7 +230,6 @@ h3{font-size:.95rem;font-weight:600}
     </div>
   </div>
 
-  <!-- Step 3: Enter / scan passcode -->
   <div class="glass-card mb-16 hidden" id="card-code">
     <div class="flex items-center justify-between mb-16">
       <h3>3 — ใส่ Passcode หรือสแกน QR</h3>
@@ -265,7 +253,6 @@ h3{font-size:.95rem;font-weight:600}
     <div id="submit-msg" class="hidden mt-12"></div>
   </div>
 
-  <!-- QR scanner inline -->
   <div class="glass-card mb-16 hidden" id="card-scan">
     <div class="flex items-center justify-between mb-16">
       <h3>สแกน QR Code</h3>
@@ -287,16 +274,10 @@ h3{font-size:.95rem;font-weight:600}
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     ATHLETE RESULT
-═══════════════════════════════════ -->
 <div class="page" id="pg-athlete-result">
   <div class="result-screen" id="result-content"></div>
 </div>
 
-<!-- ═══════════════════════════════════
-     STAFF LOGIN
-═══════════════════════════════════ -->
 <div class="page" id="pg-staff-login" style="align-items:center;justify-content:center;padding:2rem">
   <div style="max-width:380px;width:100%">
     <div class="pass-icon">
@@ -322,9 +303,6 @@ h3{font-size:.95rem;font-weight:600}
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     STAFF DASHBOARD
-═══════════════════════════════════ -->
 <div class="page" id="pg-staff" style="padding:1.5rem;max-width:960px;margin:0 auto;width:100%">
 
   <div class="flex items-center justify-between mb-24 gap-12">
@@ -341,9 +319,9 @@ h3{font-size:.95rem;font-weight:600}
   <div class="tabs mb-24">
     <button class="tab active" id="tab-btn-qr" onclick="switchTab('qr')">📱 QR & Passcode</button>
     <button class="tab" id="tab-btn-table" onclick="switchTab('table')">📋 ตารางรหัส</button>
+    <button class="tab" id="tab-btn-summary" onclick="switchTab('summary')">📊 แดชบอร์ดสรุปผล</button>
   </div>
 
-  <!-- TAB: QR display -->
   <div class="tab-panel active" id="tab-qr">
     <div class="glass-card mb-16">
       <div class="flex items-center justify-between mb-12 gap-12" style="flex-wrap:wrap">
@@ -391,7 +369,6 @@ h3{font-size:.95rem;font-weight:600}
     </div>
   </div>
 
-  <!-- TAB: Full passcode table -->
   <div class="tab-panel" id="tab-table">
     <div class="glass-card mb-16">
       <div class="flex items-center justify-between gap-12" style="flex-wrap:wrap">
@@ -412,11 +389,62 @@ h3{font-size:.95rem;font-weight:600}
       ยังไม่มีข้อมูล — รีเฟรช Passcode จากแท็บ QR ก่อน
     </div>
   </div>
+
+  <div class="tab-panel" id="tab-summary">
+    <div class="glass-card mb-16">
+      <div class="flex items-center justify-between gap-12" style="flex-wrap:wrap">
+        <h3>สรุปยอดผู้เข้าร่วมกิจกรรม (ข้อมูล ณ: <span id="summary-time">กำลังโหลด...</span>)</h3>
+        <button class="btn" onclick="refreshSummaryData()" id="refresh-summary-btn" style="flex-shrink:0">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          รีเฟรชข้อมูลสรุป
+        </button>
+      </div>
+    </div>
+    
+    <div id="summary-loading" class="flex items-center gap-8 text-sec text-sm hidden" style="padding:1rem">
+      <div class="spinner"></div><span>กำลังดึงข้อมูลจาก Summarizer...</span>
+    </div>
+
+    <div id="summary-content" class="hidden">
+      <h4 class="mb-8 text-sec" style="font-size:14px; font-weight:600">📊 สรุปแยกตามห้อง / กลุ่ม</h4>
+      <div class="tbl-wrap mb-24">
+        <table>
+          <thead>
+            <tr>
+              <th>ห้อง / กลุ่ม</th>
+              <th style="color:var(--green)">มา (Present)</th>
+              <th style="color:var(--yellow)">ลากิจ (Excused)</th>
+              <th style="color:var(--red)">ขาด (Absent)</th>
+              <th style="color:var(--text-sec)">ไม่มีข้อมูล</th>
+              <th>รวมทั้งหมด</th>
+              <th>% ข้อมูล</th>
+            </tr>
+          </thead>
+          <tbody id="summary-classes-body"></tbody>
+        </table>
+      </div>
+
+      <h4 class="mb-8 text-sec" style="font-size:14px; font-weight:600">🏃‍♂️ สรุปแยกตามบทบาท / Roles</h4>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>บทบาท (Roles)</th>
+              <th style="color:var(--green)">มา (Present)</th>
+              <th style="color:var(--yellow)">ลากิจ (Excused)</th>
+              <th style="color:var(--red)">ขาด (Absent)</th>
+              <th style="color:var(--text-sec)">ไม่มีข้อมูล</th>
+              <th>รวมทั้งหมด</th>
+              <th>% ข้อมูล</th>
+            </tr>
+          </thead>
+          <tbody id="summary-roles-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     QR FULLSCREEN MODAL
-═══════════════════════════════════ -->
 <div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeFullscreen()">
   <div class="modal">
     <p class="text-sec text-sm mb-12" id="modal-role-label"></p>
@@ -427,7 +455,6 @@ h3{font-size:.95rem;font-weight:600}
   </div>
 </div>
 
-<!-- ── Duplicate check-in warning overlay ──────────────────────────── -->
 <div class="modal-bg" id="warn-modal-bg">
   <div class="modal" style="border-color:rgba(255,159,10,.35)">
     <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
@@ -444,7 +471,6 @@ h3{font-size:.95rem;font-weight:600}
   </div>
 </div>
 
-<!-- ─────────────────────────────────────────────────────────────────── -->
 <script>
 'use strict';
 
@@ -643,7 +669,6 @@ function selectAthlete(a) {
   document.getElementById('passcode-input').focus();
 }
 
-// ══════════════════════════════════════════════════
 // ══════════════════════════════════════════════════
 // CHECKIN TOKEN  (localStorage, keyed by dd/mm)
 // One free check-in per day. Subsequent attempts
@@ -882,6 +907,7 @@ function initDashboard() {
   document.getElementById('table-date-label').textContent = 'วันที่ ' + ddmm;
   switchTab('qr');
   refreshHashes();
+  refreshSummaryData(); // เรียกดึงข้อมูลสรุปผลทันทีเมื่อเข้าแดชบอร์ด
 }
 
 // ══════════════════════════════════════════════════
@@ -944,6 +970,89 @@ function refreshHashes() {
       btn.disabled = false;
       hide('role-loading'); hide('table-loading');
       show('role-error'); show('table-empty');
+    });
+}
+
+// ══════════════════════════════════════════════════
+// STAFF: SUMMARIZER DASHBOARD FETCH (ตรงๆ ตัว ไม่เช็กโหลดกักสถานะ)
+// ══════════════════════════════════════════════════
+function refreshSummaryData() {
+  show('summary-loading');
+  hide('summary-content');
+  const btn = document.getElementById('refresh-summary-btn');
+  if (btn) btn.disabled = true;
+
+  api('getSummarizerWebData')
+    .then(json => {
+      if (btn) btn.disabled = false;
+      hide('summary-loading');
+      
+      if (!json || !json.success) {
+        console.error('[refreshSummaryData] Failed:', json ? json.msg : 'No response');
+        document.getElementById('summary-time').textContent = json ? json.msg : 'เกิดข้อผิดพลาด';
+        return;
+      }
+
+      document.getElementById('summary-time').textContent = json.timestamp || 'ไม่ระบุเวลา';
+      
+      // 1. วาดตารางข้อมูลแยกตามห้อง / กลุ่ม
+      const classesBody = document.getElementById('summary-classes-body');
+      classesBody.innerHTML = '';
+      if (Array.isArray(json.classes) && json.classes.length > 0) {
+        json.classes.forEach(c => {
+          const tr = document.createElement('tr');
+          const isTotalRow = String(c.name).toUpperCase().includes("TOTAL");
+          const total = Number(c.total) || 0;
+          const noInfo = Number(c.noInfo) || 0;
+          const pctData = total > 0 ? (((total - noInfo) / total) * 100).toFixed(1) + '%' : '0.0%';
+          
+          tr.innerHTML = `
+            <td><strong style="${isTotalRow ? 'color:var(--accent)' : ''}">${htmlEsc(c.name)}</strong></td>
+            <td style="color:var(--green); font-weight:600">${c.present}</td>
+            <td style="color:var(--yellow)">${c.excused}</td>
+            <td style="color:var(--red)">${c.absent}</td>
+            <td style="color:var(--text-sec)">${c.noInfo}</td>
+            <td><strong>${c.total}</strong></td>
+            <td><strong>${pctData}</strong></td>
+          `;
+          classesBody.appendChild(tr);
+        });
+      } else {
+        classesBody.innerHTML = '<tr><td colspan="7" class="text-center text-ter">ไม่มีข้อมูลกลุ่มกิจกรรม</td></tr>';
+      }
+
+      // 2. วาดตารางข้อมูลแยกตามหน้าที่ / บทบาท (Roles)
+      const rolesBody = document.getElementById('summary-roles-body');
+      rolesBody.innerHTML = '';
+      if (Array.isArray(json.roles) && json.roles.length > 0) {
+        json.roles.forEach(r => {
+          const tr = document.createElement('tr');
+          const isTotalRow = String(r.name).toUpperCase().includes("TOTAL");
+          const total = Number(r.total) || 0;
+          const noInfo = Number(r.noInfo) || 0;
+          const pctData = total > 0 ? (((total - noInfo) / total) * 100).toFixed(1) + '%' : '0.0%';
+
+          tr.innerHTML = `
+            <td><strong style="${isTotalRow ? 'color:var(--accent)' : ''}">${htmlEsc(r.name)}</strong></td>
+            <td style="color:var(--green); font-weight:600">${r.present}</td>
+            <td style="color:var(--yellow)">${r.excused}</td>
+            <td style="color:var(--red)">${r.absent}</td>
+            <td style="color:var(--text-sec)">${r.noInfo}</td>
+            <td><strong>${r.total}</strong></td>
+            <td><strong>${pctData}</strong></td>
+          `;
+          rolesBody.appendChild(tr);
+        });
+      } else {
+        rolesBody.innerHTML = '<tr><td colspan="7" class="text-center text-ter">ไม่มีข้อมูลบทบาทหน้าที่</td></tr>';
+      }
+
+      show('summary-content');
+    })
+    .catch(err => {
+      if (btn) btn.disabled = false;
+      hide('summary-loading');
+      console.error('[refreshSummaryData] error:', err);
     });
 }
 
@@ -1066,13 +1175,17 @@ async function downloadCurrentQR() {
 }
 
 // ══════════════════════════════════════════════════
-// STAFF: TAB SWITCHING
+// STAFF: TAB SWITCHING (รองรับ 3 แท็บ)
 // ══════════════════════════════════════════════════
 function switchTab(name) {
-  ['qr', 'table'].forEach(t => {
-    document.getElementById('tab-' + t).classList.toggle('active', t === name);
-    document.getElementById('tab-btn-' + t).classList.toggle('active', t === name);
+  ['qr', 'table', 'summary'].forEach(t => {
+    const tabEl = document.getElementById('tab-' + t);
+    const btnEl = document.getElementById('tab-btn-' + t);
+    if (tabEl) tabEl.classList.toggle('active', t === name);
+    if (btnEl) btnEl.classList.toggle('active', t === name);
   });
+  // หากเปลี่ยนมาหน้าสรุปผล ให้รีเฟรชข้อมูลล่าสุดมาแสดงทันที
+  if (name === 'summary') refreshSummaryData();
 }
 
 // ══════════════════════════════════════════════════
