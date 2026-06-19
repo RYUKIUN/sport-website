@@ -491,6 +491,63 @@ let scanStream      = null;
 let scanRAF         = null;
 let scanActive      = false;
 let hashData        = [];
+let pendingPasscode = null; // set when site is opened via a scanned check-in URL
+
+// ══════════════════════════════════════════════════
+// SESSION PERSISTENCE (localStorage)
+// - Staff: remembers password, auto re-logs-in on open
+// - Athlete: remembers last class + selected name, auto
+//            fills the form on open (does NOT auto-submit)
+// ══════════════════════════════════════════════════
+const STAFF_SESSION_KEY   = 'staff_session_v1';
+const ATHLETE_SESSION_KEY = 'athlete_session_v1';
+
+function saveStaffSession(password) {
+  try { localStorage.setItem(STAFF_SESSION_KEY, JSON.stringify({ password })); } catch (e) {}
+}
+function loadStaffSession() {
+  try {
+    const raw = localStorage.getItem(STAFF_SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function clearStaffSession() {
+  try { localStorage.removeItem(STAFF_SESSION_KEY); } catch (e) {}
+}
+
+function saveAthleteSession(className, athlete) {
+  try { localStorage.setItem(ATHLETE_SESSION_KEY, JSON.stringify({ className, athlete })); } catch (e) {}
+}
+function loadAthleteSession() {
+  try {
+    const raw = localStorage.getItem(ATHLETE_SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function clearAthleteSession() {
+  try { localStorage.removeItem(ATHLETE_SESSION_KEY); } catch (e) {}
+}
+
+// Build a full URL that, when scanned by any camera/QR app, opens this
+// site directly on the athlete check-in flow with the passcode pre-filled.
+function buildCheckinUrl(passcode) {
+  const base = window.location.origin + window.location.pathname;
+  return base + '?passcode=' + encodeURIComponent(passcode);
+}
+
+// Accepts either the new URL-style QR content (https://...?passcode=XXXX)
+// or a bare legacy passcode string, and returns the 6-char passcode.
+function extractPasscodeFromScan(raw) {
+  const text = String(raw || '').trim();
+  try {
+    const url = new URL(text);
+    const fromQuery = url.searchParams.get('passcode');
+    if (fromQuery) return fromQuery.trim().toUpperCase();
+  } catch (e) {
+    // Not a URL — fall through to treat it as a bare passcode
+  }
+  return text.toUpperCase();
+}
 
 // ══════════════════════════════════════════════════
 // API HELPER — GET-only fetch to avoid CORS preflight
@@ -579,6 +636,13 @@ function initAthlete() {
         sel.appendChild(opt);
       });
       show('class-select-wrap');
+
+      // ── Auto-restore saved athlete session (class + name) ──
+      const saved = loadAthleteSession();
+      if (saved && saved.className && allClasses.includes(saved.className)) {
+        sel.value = saved.className;
+        onClassSelected(saved.athlete || null);
+      }
     })
     .catch(err => {
       console.error('[initAthlete] error:', err);
@@ -590,7 +654,7 @@ function initAthlete() {
 // ══════════════════════════════════════════════════
 // ATHLETE: CLASS / NAMES
 // ══════════════════════════════════════════════════
-function onClassSelected() {
+function onClassSelected(savedAthlete) {
   const val = document.getElementById('class-select').value;
   if (!val) { hide('card-name'); hide('card-code'); return; }
   selectedClass = val;
@@ -614,6 +678,25 @@ function onClassSelected() {
       allAthletes = json.data;
       show('name-search-wrap');
       filterNames('');
+
+      // ── Auto-restore saved athlete selection (input only, no auto-submit) ──
+      if (savedAthlete) {
+        const match = allAthletes.find(a =>
+          (savedAthlete.row != null && a.row === savedAthlete.row) ||
+          (savedAthlete.identity && String(a.identity) === String(savedAthlete.identity)) ||
+          (savedAthlete.index != null && String(a.index) === String(savedAthlete.index) && a.name === savedAthlete.name)
+        );
+        if (match) {
+          selectAthlete(match);
+          // Came from a scanned check-in URL AND we already know who they are
+          // → everything is known, so check in automatically.
+          if (pendingPasscode) {
+            const code = pendingPasscode;
+            pendingPasscode = null;
+            delay(150).then(() => submitCheckin(code));
+          }
+        }
+      }
     })
     .catch(err => {
       console.error('[onClassSelected] error:', err);
@@ -628,6 +711,7 @@ function backToClass() {
   selectedAthlete = null;
   hide('card-name'); hide('card-code');
   document.getElementById('class-select').value = '';
+  clearAthleteSession();
 }
 
 function filterNames(q) {
@@ -663,10 +747,11 @@ function selectAthlete(a) {
   document.getElementById('name-search').value = a.name;
   setEl('name-selected-text', '#' + htmlEsc(a.index) + ' — ' + htmlEsc(a.name) + '  ·  ' + htmlEsc(a.role));
   show('name-selected');
-  document.getElementById('passcode-input').value = '';
+  document.getElementById('passcode-input').value = pendingPasscode || '';
   hide('submit-msg');
   show('card-code');
   document.getElementById('passcode-input').focus();
+  saveAthleteSession(selectedClass, a);
 }
 
 // ══════════════════════════════════════════════════
@@ -708,6 +793,7 @@ function proceedAfterWarn() {
 // ══════════════════════════════════════════════════
 function submitCheckin(passcodeOverride) {
   const code = (passcodeOverride || document.getElementById('passcode-input').value).trim().toUpperCase();
+  pendingPasscode = null;
   if (!selectedClass || !selectedAthlete) {
     flashMsg('submit-msg', 'error', 'เลือกห้องและชื่อก่อน');
     console.warn('[submitCheckin] Incomplete selection. class:', selectedClass, 'athlete:', selectedAthlete);
@@ -838,8 +924,8 @@ async function startScan() {
         console.error('[startScan] decode error:', e);
       }
       if (code && code.data) {
-        const raw = code.data.trim().toUpperCase();
-        console.log('[startScan] QR detected:', raw);
+        const raw = extractPasscodeFromScan(code.data);
+        console.log('[startScan] QR detected:', code.data, '→ passcode:', raw);
         stopScan();
         document.getElementById('passcode-input').value = raw;
         show('card-code');
@@ -881,6 +967,7 @@ function doLogin() {
         return;
       }
       document.getElementById('pw-input').value = '';
+      saveStaffSession(pw);
       switchPage('pg-staff');
       initDashboard();
     })
@@ -894,8 +981,32 @@ function doLogin() {
 
 function doLogout() {
   hashData = [];
+  clearStaffSession();
   switchPage('pg-landing');
   document.getElementById('pw-input').value = '';
+}
+
+// ══════════════════════════════════════════════════
+// STAFF: AUTO-LOGIN FROM SAVED SESSION
+// ══════════════════════════════════════════════════
+function tryStaffAutoLogin() {
+  const saved = loadStaffSession();
+  if (!saved || !saved.password) return;
+
+  api('verifyStaffPassword', { password: saved.password })
+    .then(res => {
+      if (res && res.success) {
+        switchPage('pg-staff');
+        initDashboard();
+      } else {
+        console.warn('[tryStaffAutoLogin] Saved password rejected, clearing session');
+        clearStaffSession();
+      }
+    })
+    .catch(err => {
+      console.error('[tryStaffAutoLogin] error:', err);
+      // Network/setup error — leave session intact, just don't auto-login
+    });
 }
 
 // ══════════════════════════════════════════════════
@@ -1084,7 +1195,7 @@ function renderQR() {
   const wrap = document.getElementById('qr-canvas-wrap');
   wrap.innerHTML = '';
   try {
-    new QRCode(wrap, { text: entry.passcode, width: 220, height: 220, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
+    new QRCode(wrap, { text: buildCheckinUrl(entry.passcode), width: 220, height: 220, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
   } catch (e) {
     console.error('[renderQR] QRCode error:', e);
     wrap.innerHTML = '<p class="text-ter text-sm">สร้าง QR ไม่ได้</p>';
@@ -1108,7 +1219,7 @@ function openFullscreen() {
   const wrap = document.getElementById('modal-qr-wrap');
   wrap.innerHTML = '';
   try {
-    new QRCode(wrap, { text: entry.passcode, width: 260, height: 260, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
+    new QRCode(wrap, { text: buildCheckinUrl(entry.passcode), width: 260, height: 260, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
   } catch (e) {
     console.error('[openFullscreen] QRCode error:', e);
   }
@@ -1133,7 +1244,7 @@ async function downloadCurrentQR() {
   document.body.appendChild(tempDiv);
 
   try {
-    new QRCode(tempDiv, { text: entry.passcode, width: 256, height: 256, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
+    new QRCode(tempDiv, { text: buildCheckinUrl(entry.passcode), width: 256, height: 256, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
   } catch (e) {
     console.error('[downloadCurrentQR] QRCode render error:', e);
     document.body.removeChild(tempDiv);
@@ -1222,6 +1333,18 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscr
 if (!API_URL || API_URL.indexOf("REPLACE_WITH") !== -1) {
   show('setup-banner');
   console.error('[boot] API_URL is not configured. Edit the API_URL constant near the top of the <script> tag.');
+} else {
+  // ── Opened via a scanned check-in QR (?passcode=XXXX) ──
+  const urlParams = new URLSearchParams(window.location.search);
+  const scannedCode = urlParams.get('passcode');
+  if (scannedCode) {
+    pendingPasscode = scannedCode.trim().toUpperCase();
+    // Clean the URL so refreshing/sharing doesn't resubmit the same code
+    window.history.replaceState({}, '', window.location.pathname);
+    nav('athlete');
+  } else {
+    tryStaffAutoLogin();
+  }
 }
 </script>
 </body>
